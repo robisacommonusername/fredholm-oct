@@ -41,12 +41,13 @@ function [pts, weights] = generate_quadrature(method, n)
 		end;
 		
 		%2. Evaluation points. Remap for interval [0,1]
-		pts = (roots(Pthis) + 1)/2;
+		xi = sort(roots(Pthis));
+		pts = (xi+1)/2;
 		
-		%3. Weights. The weights are 2/[(1-xi^2)P'(xi)] * (1-0)/2
+		%3. Weights. The weights are 2/[(1-xi^2)P'(xi)^2] * (1-0)/2
 		% factor of 1/2 is due to shifting integration domain to [0,1] from [-1,1]
 		Pderiv = polyder(Pthis);
-		weights = 1 ./ ((1 - pts.^2) .* (arrayfun(@(x) polyval(Pderiv,x), pts)).^2)
+		weights = 1 ./ ((1 - xi.^2) .* (arrayfun(@(x) polyval(Pderiv,x), xi)).^2)
 		
 		case 'gausslaguerre10'
 		%10 point gauss-laguerre quadrature, subdivide interval as necessary
