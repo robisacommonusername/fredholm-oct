@@ -8,7 +8,8 @@ function Kd = discretise_operator(H, n, method)
 	[pts, weights] = generate_quadrature(method, n);
 	Kd = zeros(n,n);
 	row = 1;
-	for k = pts
+	for ii = 1:n
+		k = pts(ii);
 		Kd(row,:) = weights .* arrayfun(@(z) H(k,z), pts);
 		row = row+1;
 	end;
