@@ -1,7 +1,7 @@
 %generate the evaluation points and weights
 %for various quadrature methods. Assume
 %integral is over [0,1]
-function [pts, weights] = generate_quadrature(method, n)
+function [pts, weights] = generate_quadrature(method, n, varargin)
 	switch(method)
 		case 'gauss10'
 		%lookup
@@ -18,12 +18,12 @@ function [pts, weights] = generate_quadrature(method, n)
 		end;
 		
 		interval_width = 1.0/num_intervals;
-		weights = repmat(interval_width/2*[w;w],2*num_intervals,1);
+		weights = repmat(interval_width/2*w,2*num_intervals,1);
 		pts = zeros(n,1);
 		for interval_i = 1:num_intervals
 			a = (interval_i-1)*interval_width;
 			b = interval_i*interval_width;
-			pts(interval_i:interval_i+10) = 0.5*(b+a)+0.5*(b-a)*[-x; x];
+			pts(10*(interval_i-1)+1:10*(interval_i-1)+10) = 0.5*(b+a)+0.5*(b-a)*[-x; x];
 		end;
 			
 		case 'gaussn'
@@ -47,10 +47,7 @@ function [pts, weights] = generate_quadrature(method, n)
 		%3. Weights. The weights are 2/[(1-xi^2)P'(xi)^2] * (1-0)/2
 		% factor of 1/2 is due to shifting integration domain to [0,1] from [-1,1]
 		Pderiv = polyder(Pthis);
-		weights = 1 ./ ((1 - xi.^2) .* (arrayfun(@(x) polyval(Pderiv,x), xi)).^2)
-		
-		case 'gausslaguerre10'
-		%10 point gauss-laguerre quadrature, subdivide interval as necessary
+		weights = 1 ./ ((1 - xi.^2) .* (arrayfun(@(x) polyval(Pderiv,x), xi)).^2);
 		
 		case 'clenshawcurtis10'
 		
@@ -58,12 +55,35 @@ function [pts, weights] = generate_quadrature(method, n)
 		%n point clenshaw curtis quadrature. Evaluation points
 		%are the roots of the first kind Chebyshev polynomials
 		%Tn(x) = cos (n acos(x)) = 0
+		N = n-1;
+		
+		
+		k = (1:N/2)';
+		pts = ([-1*cos(k*pi/N);1;cos(k*pi/N)]+1)/2;
+		d = [1;2./(1-(2:2:(N-2))'.^2);1/(1-N^2)];
+		w = dct(d)/2;
+		weights = [flipud(w);w(2:end)];
 		
 		case 'simpson'
+		%subdivide interval [0,1]
+		%because of shared end points, n = 2*num_intervals+1
+		num_intervals = ceil((n-1)/2);
+		if mod(n,2) ~= 1
+			disp('WARNING: n should be odd for use with Simpsons rule');
+		end;
+		
+		interval_width = 1.0/num_intervals;
+		step = interval_width/2;
+		pts = (0:step:1)';
+		weights = [interval_width/6;repmat([2*interval_width/3;interval_width/3],num_intervals,1)];
+		%fix last entry, don't double count
+		weights(end) = interval_width/6;
 		
 		case 'trivial'
 		step = 1/n;
 		weights = step * ones(n,1);
+		pts = (step/2:step:1-step/2)';
+		
 		
 	end;
 end

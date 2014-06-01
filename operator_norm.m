@@ -14,7 +14,8 @@ function sqrt_sigma = operator_norm(Kd,varargin)
 	
 	KdagK = ctranspose(Kd)*Kd;
 	
-	x = ones(columns(KdagK),1);
+	[rows,cols] = size(KdagK);
+	x = ones(cols,1);
 	x = x/norm(x);
 	diff = eps+1;
 	guard = 0;

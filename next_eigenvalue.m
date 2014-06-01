@@ -16,7 +16,8 @@ function [eval, efunc] = next_eigenvalue(Kd, efuncs, varargin)
 		maxIters = varargin{2};
 	end;
 	
-	x = rand(columns(Kd),1);
+	[rows,cols] = size(Kd);
+	x = rand(cols,1);
 	x = x/norm(x);
 	diff = eps+1;
 	guard = 0;
