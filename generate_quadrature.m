@@ -5,10 +5,12 @@ function [pts, weights] = generate_quadrature(method, n, varargin)
 	switch(method)
 		case 'gauss10'
 		%lookup
-		w = [0.2955242247;0.2692667193;0.2190863625;...
+		w = [0.0666713443;0.1494513492;0.2190863625;0.2692667193;...
+			0.2955242247;0.2955242247;0.2692667193;0.2190863625;...
 			0.1494513492;0.0666713443];
 			
-		x = [0.1488743390;0.4333953941;0.6794095683;...
+		x = [-0.9739065285;-0.8650633667;-0.6794095683;-0.4333953941;...
+			-0.1488743390;0.1488743390;0.4333953941;0.6794095683;...
 			0.8650633667;0.9739065285];
 			
 		%classic gauss-legendre 10 point quadrature. Subdivide interval as necessary
@@ -18,12 +20,12 @@ function [pts, weights] = generate_quadrature(method, n, varargin)
 		end;
 		
 		interval_width = 1.0/num_intervals;
-		weights = repmat(interval_width/2*w,2*num_intervals,1);
+		weights = repmat(interval_width/2*w,num_intervals,1);
 		pts = zeros(n,1);
 		for interval_i = 1:num_intervals
 			a = (interval_i-1)*interval_width;
 			b = interval_i*interval_width;
-			pts(10*(interval_i-1)+1:10*(interval_i-1)+10) = 0.5*(b+a)+0.5*(b-a)*[-x; x];
+			pts(10*(interval_i-1)+1:10*(interval_i-1)+10) = 0.5*(b+a)+0.5*(b-a)*x;
 		end;
 			
 		case 'gaussn'
