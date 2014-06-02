@@ -4,10 +4,22 @@
 %specify the current sampling points.
 %Just use linear interp. for now.
 %assume k in (0,1)
+
 function [Sd,new_pts] = discretise_function(Sexp, n, method, varargin)
 	if nargin > 3
 		sampling_points = varargin{1};
+		if nargin > 4
+			%user has specified a warping function kbar(k). Thus we warp
+			%the sampling points ki to kbar(ki). Note that the warping
+			%function must be able to be called on a vector. This is the
+			%case for the function returned from the warp_variables
+			%function
+			kbar = varargin{2};
+			sampling_points = kbar(sampling_points);
+		end;
 	else
+		%assume equally distributed sampling points in [0,1], with
+		%half step initial offset if none specified.
 		num_points = length(Sexp);
 		step = 1.0/num_points;
 		sampling_points = step/2:step:(2*num_points-1)*step/2;
