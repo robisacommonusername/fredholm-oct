@@ -4,7 +4,7 @@
 % assume k,z in [0,1] for now
 %sampling points in k domain are same as sampling points in z domain, to
 %allow K to be iterated
-function Kd = discretise_operator(H, n, method)
+function [Kd, pts, weights] = discretise_operator(H, n, method)
 	[pts, weights] = generate_quadrature(method, n);
 	Kd = zeros(n,n);
 	row = 1;
