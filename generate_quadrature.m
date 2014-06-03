@@ -1,7 +1,7 @@
 %generate the evaluation points and weights
 %for various quadrature methods. Assume
 %integral is over [0,1]
-function [pts, weights] = generate_quadrature(method, n, varargin)
+function [pts, weights] = generate_quadrature(method, n)
 	switch(method)
 		case 'gauss10'
 		%lookup
@@ -85,6 +85,10 @@ function [pts, weights] = generate_quadrature(method, n, varargin)
 		step = 1/n;
 		weights = step * ones(n,1);
 		pts = (step/2:step:1-step/2)';
+		
+		otherwise
+		disp('WARNING: unknown quadrature method. Falling back to trivial method');
+		[pts, weights] = generate_quadrature('trivial', n);
 		
 		
 	end;
