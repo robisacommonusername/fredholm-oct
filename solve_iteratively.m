@@ -1,14 +1,14 @@
 %Iterative solver for large 2nd kind Fredholm equation in form
 % $S = \eps \chi + \hat{K} \chi
 % Where K is positive definite
-function [chi, error, iterations] = solve_iteratively(K, S, eps, varargin)
+function [chi, error, iterations] = solve_iteratively(K, S, eps, weights, varargin)
 	%Default tolerance and maximum iterations
 	tol = 0.0001;
 	maxIters = 1000;
-	if nargin > 3
+	if nargin > 4
 		tol = vargin{1};
 	end;
-	if nargin > 4
+	if nargin > 5
 		maxIters = vargin{2};
 	end;
 	
@@ -16,13 +16,13 @@ function [chi, error, iterations] = solve_iteratively(K, S, eps, varargin)
 	%transform equation into form $(I - \lambda \hat{K})\chi = y$
 	y = S/eps;
 	lambda = -1/eps;
-	normK = operator_norm(K);
+	normK = operator_norm(K, weights);
 	mu = 0.9 * -2*lambda/(normK - lambda);
 	
 	%error estimates: |e| <= |x[n+1] - x[n]|/(1-|(1-mu)I + mu*lambdaK|)
 	[r,c] = size(K);
 	new_op = (1-mu)*eye(r) + mu*lambda*K;
-	error_multiplier = 1-operator_norm(new_op);
+	error_multiplier = 1-operator_norm(new_op, weights);
 	abs_tol = tol*error_multiplier;
 	
 	iterations = 0;
@@ -31,8 +31,8 @@ function [chi, error, iterations] = solve_iteratively(K, S, eps, varargin)
 	
 	while error > abs_tol && iterations < maxIters
 		chi_old = chi;
-		chi = mu*y + (1 − mu)*chi + mu*lambda*K*chi;
-		error = norm(chi - chi_old);
+		chi = mu*y + (1 − mu)*chi + mu*lambda*(K*chi);
+		error = sqrt(weights' * (chi - chi_old).^2);
 		iterations = iterations + 1;
 	end;
 	

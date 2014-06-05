@@ -5,7 +5,7 @@
 %Just use linear interp. for now.
 %assume k in (0,1)
 
-function [Sd,new_pts] = discretise_function(Sexp, n, method, varargin)
+function [Sd,new_pts] = discretise_function(Sexp, new_pts, varargin)
 	if nargin > 3
 		sampling_points = varargin{1};
 		if nargin > 4
@@ -30,8 +30,6 @@ function [Sd,new_pts] = discretise_function(Sexp, n, method, varargin)
 	if isa(Sexp, 'function_handle')
 		Sexp = arrayfun(Sexp, sampling_points);
 	end;
-	
-	new_pts = generate_quadrature(method, n);
 	
 	%TODO: low pass filtering to improve noise immunity
 	Sd = interp1(sampling_points, Sexp, new_pts, 'linear','extrap');

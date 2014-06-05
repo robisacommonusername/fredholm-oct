@@ -1,8 +1,8 @@
-%Calculate regularisation parameter, and return Tikhonov regularised
-%operator
+%Calculate regularisation parameter.
+
 %Need to specify the quadrature weights so that we can compute |K|
-%[Keps, eps] = regularise(K, weights, {method}, {delta}
-function [Keps, eps] = regularise(K, varargin)
+%eps = regularise(K, weights, {method}, {delta}
+function eps = regularise(K, weights, varargin)
 	method = 'discrepancy';
 	delta = 10;
 	
@@ -25,7 +25,5 @@ function [Keps, eps] = regularise(K, varargin)
 			disp('Unkown regularisation method');
 			eps = 0;
 	end;
-	
-	[n,n] = size(K);
-	Keps = eps*eye(n) + ctranspose(K)*K;
+
 end
