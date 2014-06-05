@@ -32,7 +32,7 @@ function [chi, error, iterations] = solve_iteratively(K, S, eps, weights, vararg
 	while error > abs_tol && iterations < maxIters
 		chi_old = chi;
 		chi = mu*y + (1 − mu)*chi + mu*lambda*(K*chi);
-		error = sqrt(weights' * (chi - chi_old).^2);
+		error = sqrt(weights' * abs(chi - chi_old).^2);
 		iterations = iterations + 1;
 	end;
 	
