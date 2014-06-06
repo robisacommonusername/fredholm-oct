@@ -14,6 +14,7 @@
 %maximum iterations, or 0 for default=1000;
 %quadrature method, default = gauss10
 %regularisation method: Actually the method of selecting a regularisation parameter
+%	either 'disc' or 'lcurve'
 %snr: SNR of S, in dB. Ignored when using lcurve. Default value is 5dB
 
 function [chi, z_pts, error] = solve_1d(H, S, S_ki, A, A_ki, pen_depth, varargin)
@@ -22,7 +23,7 @@ function [chi, z_pts, error] = solve_1d(H, S, S_ki, A, A_ki, pen_depth, varargin
 	quad_method = 'gauss10';
 	maxIters = 1000;
 	tol = 0.001;
-	reg_method = 'discrepancy';
+	reg_method = 'disc';
 	snr_dB = 5;
 	
 	%parse varargin

@@ -1,37 +1,47 @@
 %Iterative solver for large 2nd kind Fredholm equation in form
 % KdagS = eps*x + Kdag*K*x
 % Where K is positive definite
-function [chi, error, iterations] = solve_iteratively(K, Kdag, S, eps, weights, varargin)
+function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, eps, weights, varargin)
+	%allow user to specify |K| to prevent recalculating it
+	if nargin > 5
+		if varargin{1} ~= 0
+			normK = varargin{1};
+		else
+			normK = operator_norm(Kd,Kdag,weights);
+		end;
+	else
+		normK = operator_norm(Kd,Kdag,weights);
+	end;
+	
 	%Default tolerance and maximum iterations
 	tol = 0.0001;
 	maxIters = 1000;
-	if nargin > 5
-		tol = vargin{1};
-	end;
 	if nargin > 6
-		maxIters = vargin{2};
+		tol = vargin{2};
+	end;
+	if nargin > 7
+		maxIters = vargin{3};
 	end;
 	
-	%select relaxation parameter. 0.9 is a safety factor
+	%select relaxation parameter. 0.5 is a safety factor
 	%transform equation into form $(I - \lambda \hat{K})\chi = y$
-	y = S/eps;
-	lambda = -1/eps;
-	normK = operator_norm(K, weights);
-	mu = 0.9 * -2*lambda/(normK - lambda);
+	y = -1*(Kdag*S);
+	lambda = -1*eps;
+	mu = 0.5 * -2*lambda/(normK^2 - lambda);
 	
-	%error estimates: |e| <= |x[n+1] - x[n]|/(1-|(1-mu)I + mu*lambdaK|)
-	[r,c] = size(K);
-	new_op = (1-mu)*eye(r) + mu*lambda*K;
-	error_multiplier = 1-operator_norm(new_op, weights);
+	%error estimate
+	error_multiplier = mu*(1+normK^2/eps);
 	abs_tol = tol*error_multiplier;
 	
 	iterations = 0;
 	error = abs_tol + 1;
-	chi = mu*y;
-	
+	%TODO: improve starting guess. Will converge correctly anyway, due
+	%to contraction mapping theorem (there can only be one fixed point)
+	chi = (mu/lambda)*y;
+
 	while error > abs_tol && iterations < maxIters
 		chi_old = chi;
-		chi = mu*y + (1-mu)*chi + mu*lambda*(K*chi);
+		chi = (mu/lambda)*y + (1-mu)*chi + Kdag*(Kd*((mu/lambda)*chi));
 		error = sqrt(weights' * (chi - chi_old).^2);
 		iterations = iterations + 1;
 	end;
