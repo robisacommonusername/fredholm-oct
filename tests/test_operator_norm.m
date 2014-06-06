@@ -41,8 +41,11 @@ function [status, msg] = test_alternative_quadratures()
 	%we should be able to use alternative quadratures, but get similar
 	%results for the operator norm
 	H = @(k,z) abs(k-z);
-	[Kd1, Kdag1,pts1, weights1] = discretise_operator(H, 100, 'gauss10');
-	[Kd2, Kdag2,pts2, weights2] = discretise_operator(H, 151, 'simpson');
+	[pts1,weights1] = generate_quadrature('gauss10', 100);
+	[pts2,weights2] = generate_quadrature('simpson', 151);
+	[Kd1, Kdag1] = discretise_operator(H, pts1, weights1);
+	[Kd2, Kdag2] = discretise_operator(H, pts2, weights2);
+
 	norm_gauss = operator_norm(Kd1,Kdag1,weights1);
 	norm_simps = operator_norm(Kd2,Kdag2,weights2);
 	[status, msg] = assert_eq(norm_gauss, norm_simps);
