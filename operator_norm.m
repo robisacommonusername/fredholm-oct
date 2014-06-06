@@ -4,7 +4,7 @@
 %x is defined at the quadrature points, so norm(x)
 %may not be a good estimate of |x|. In order to compute |x|
 %we need to know the quadrature weights, and |x| = sqrt(weights' * abs(x).^2)
-function [sqrt_sigma, x,numIters] = operator_norm(Kd,Kdag,weights,varargin)
+function [sqrt_sigma,numIters] = operator_norm(Kd,Kdag,weights,varargin)
 	%user can optionally specify a tolerance and max number of iterations,
 	%otherwise use default values
 	maxIters = 1000;
