@@ -14,7 +14,8 @@ end;
 
 function [status, msg] = test_trivial()
 	H = @(k,z) exp(-(k^2+z^2));
-	Kd = discretise_operator(H, 2, 'trivial');
+	[pts,weights] = generate_quadrature('trivial', 2);
+	[Kd, Kdag] = discretise_operator(H, pts, weights);
 	Ka = 0.5*[exp(-1/8) exp(-5/8); exp(-5/8) exp(-9/8)];
 	[status, msg] = assert_eq(Ka, Kd);
 end;

@@ -47,20 +47,25 @@ function [chi, z_pts, error] = solve_1d(H, S, S_ki, A, A_ki, pen_depth, varargin
 		snr_dB = varargin{6};
 	end;	
 	
-	%Contruct discretised operator on [0,1]x[0,1]
+	%Calculate quadrature points and weights
+	[pts, weights] = generate_quadrature(quad_method, n);
+	
+	%remap variable into [0,1]x[0,1]
 	[Hbar, kbar, z] = warp_variables(H, A_ki(1), A_ki(end), pen_depth);
-	[Kd, pts, weights] = discretise_operator(Hbar, n, quad_method);
 	
 	%resample S and A at the appropriate sampling points
 	Sbar = discretise_function(S, pts, kbar(S_ki));
 	Abar = discretise_function(A, pts, kbar(A_ki));
-	Kbar = diag(Abar)*Kd; %correct for source spectrum. 
+	
+	%construct discretised operator and its adjoint
+	[Kd, Kdag] = discretise_operator(Hbar, pts, weights, Abar);
 	
 	%Compute regularisation parameter
-	eps = regularise(Kbar, weights, reg_method, 10^(snr_dB/10));
+	normK = operator_norm(Kbar,Kdagbar,weights);
+	eps = regularise('disc', normK, 10^(snr_dB/10));
 	
 	%solve equations
-	[chi, error] = solve_iteratively(Kbar, Sbar, eps, weights, tol, maxIters);
+	[chi, error] = solve_iteratively(Kd, Kdag, Sbar, eps, weights, tol, maxIters);
 	
 	%unwarp z axis
 	z_pts = z(pts);

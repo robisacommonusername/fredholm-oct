@@ -15,22 +15,22 @@ end;
 
 
 function [status, msg] = test_gaussn()
-	[pts, weights] = generate_quadrature('gaussn',30);
+	[pts, weights] = generate_quadrature('gaussn',30,0.00005);
 	[status, msg] = assert_eq(sum(weights.*exp(pts)), 1.71828);
 end;
 
 function [status, msg] = test_simpson()
-	[pts, weights] = generate_quadrature('simpson',31);
+	[pts, weights] = generate_quadrature('simpson',31,0.00005);
 	[status, msg] = assert_eq(sum(weights.*exp(pts)), 1.71828);
 end;
 
 function [status, msg] = test_trivial()
-	[pts, weights] = generate_quadrature('trivial',51);
+	[pts, weights] = generate_quadrature('trivial',51,0.00005);
 	[status, msg] = assert_eq(sum(weights.*exp(pts)), 1.71828);
 end;
 
 function [status, msg] = test_gauss10_monotonic()
-	[pts,weights] = generate_quadrature('gauss10',30);
+	[pts,weights] = generate_quadrature('gauss10',30,0.00005);
 	[status, msg] = assert_eq(pts, sort(pts));
 end;
 

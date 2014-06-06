@@ -1,14 +1,14 @@
 %Iterative solver for large 2nd kind Fredholm equation in form
-% $S = \eps \chi + \hat{K} \chi
+% KdagS = eps*x + Kdag*K*x
 % Where K is positive definite
-function [chi, error, iterations] = solve_iteratively(K, S, eps, weights, varargin)
+function [chi, error, iterations] = solve_iteratively(K, Kdag, S, eps, weights, varargin)
 	%Default tolerance and maximum iterations
 	tol = 0.0001;
 	maxIters = 1000;
-	if nargin > 4
+	if nargin > 5
 		tol = vargin{1};
 	end;
-	if nargin > 5
+	if nargin > 6
 		maxIters = vargin{2};
 	end;
 	
@@ -31,8 +31,8 @@ function [chi, error, iterations] = solve_iteratively(K, S, eps, weights, vararg
 	
 	while error > abs_tol && iterations < maxIters
 		chi_old = chi;
-		chi = mu*y + (1 − mu)*chi + mu*lambda*(K*chi);
-		error = sqrt(weights' * abs(chi - chi_old).^2);
+		chi = mu*y + (1-mu)*chi + mu*lambda*(K*chi);
+		error = sqrt(weights' * (chi - chi_old).^2);
 		iterations = iterations + 1;
 	end;
 	
