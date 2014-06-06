@@ -19,3 +19,12 @@ function [status, msg] = test_trivial()
 	Ka = 0.5*[exp(-1/8) exp(-5/8); exp(-5/8) exp(-9/8)];
 	[status, msg] = assert_eq(Ka, Kd);
 end;
+
+function [status, msg] = test_with_A()
+	H = @(k,z) exp(-(k^2+z^2));
+	[pts,weights] = generate_quadrature('trivial', 2);
+	A = [1;2];
+	[Kd, Kdag] = discretise_operator(H, pts, weights,A);
+	Ka = 0.5*[exp(-1/8) exp(-5/8); 2*exp(-5/8) 2*exp(-9/8)];
+	[status, msg] = assert_eq(Ka, Kd);
+end;
