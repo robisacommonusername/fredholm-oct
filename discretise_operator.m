@@ -26,6 +26,6 @@ function [Kd, Kdag] = discretise_operator(H, pts, weights, varargin)
 	[z,k] = meshgrid(pts,pts);
 	H_kz = diag(A)*arrayfun(H, k, z);
 	W = diag(weights);
-	Kd = W*H_kz;
-	Kdag = W*ctranspose(H_kz);
+	Kd = H_kz*W;
+	Kdag = ctranspose(H_kz)*W;
 end

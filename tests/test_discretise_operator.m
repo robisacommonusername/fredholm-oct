@@ -35,9 +35,9 @@ function [status, msg] = test_gauss_legendre3()
 	[pts, weights] = generate_quadrature('gaussn',3);
 	[Kd,Kdag] = discretise_operator(H,pts,weights);
 	r35 = sqrt(3/5);
-	Ka = diag([5/18;4/9;5/18])*[1.5*(1-r35), 1+0.5*(1-r35), 0.5*(1-r35)+(1+r35);...
+	Ka = [1.5*(1-r35), 1+0.5*(1-r35), 0.5*(1-r35)+(1+r35);...
 		0.5+(1-r35), 1.5, 0.5+(1+r35);...
-		0.5*(1+r35)+(1-r35), 0.5*(1+r35)+1, 1.5*(1+r35)];
+		0.5*(1+r35)+(1-r35), 0.5*(1+r35)+1, 1.5*(1+r35)]*diag([5/18;4/9;5/18]);
 	[status, msg] = assert_eq(Ka, Kd);
 end;
 
@@ -47,9 +47,9 @@ function [status, msg] = test_gauss_legendre3_adjoint()
 	[pts, weights] = generate_quadrature('gaussn',3);
 	[Kd,Kdag] = discretise_operator(H,pts,weights);
 	r35 = sqrt(3/5);
-	Ka = diag([5/18;4/9;5/18])*[1.5*(1-r35), 1+0.5*(1-r35), 0.5*(1-r35)+(1+r35);...
+	Ka = transpose([1.5*(1-r35), 1+0.5*(1-r35), 0.5*(1-r35)+(1+r35);...
 		0.5+(1-r35), 1.5, 0.5+(1+r35);...
-		0.5*(1+r35)+(1-r35), 0.5*(1+r35)+1, 1.5*(1+r35)]';
+		0.5*(1+r35)+(1-r35), 0.5*(1+r35)+1, 1.5*(1+r35)])*diag([5/18;4/9;5/18]);
 	[status, msg] = assert_eq(Ka, Kdag);
 end;
 
