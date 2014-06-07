@@ -19,8 +19,11 @@ function [Kd, Kdag] = discretise_operator(H, pts, weights, varargin)
 	else
 		A = ones(1,length(pts));
 	end;
-
-	[k,z] = meshgrid(pts,pts);
+	
+	%k increases down columns, z increases accross
+	%rows, so if x is a column vector, S=Kd*x, S also a col vector
+	%hence we need to do [z,k]=meshgrid(...), not [k,z]=mesh...
+	[z,k] = meshgrid(pts,pts);
 	H_kz = diag(A)*arrayfun(H, k, z);
 	W = diag(weights);
 	Kd = W*H_kz;

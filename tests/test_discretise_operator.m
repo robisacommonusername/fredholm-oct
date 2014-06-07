@@ -28,3 +28,29 @@ function [status, msg] = test_with_A()
 	Ka = 0.5*[exp(-1/8) exp(-5/8); 2*exp(-5/8) 2*exp(-9/8)];
 	[status, msg] = assert_eq(Ka, Kd);
 end;
+
+function [status, msg] = test_gauss_legendre3()
+	%use a kernel not symmetric in k, z
+	H = @(k,z) k+2*z;
+	[pts, weights] = generate_quadrature('gaussn',3);
+	[Kd,Kdag] = discretise_operator(H,pts,weights);
+	r35 = sqrt(3/5);
+	Ka = diag([5/18;4/9;5/18])*[1.5*(1-r35), 1+0.5*(1-r35), 0.5*(1-r35)+(1+r35);...
+		0.5+(1-r35), 1.5, 0.5+(1+r35);...
+		0.5*(1+r35)+(1-r35), 0.5*(1+r35)+1, 1.5*(1+r35)];
+	[status, msg] = assert_eq(Ka, Kd);
+end;
+
+function [status, msg] = test_gauss_legendre3_adjoint()
+	%use a kernel not symmetric in k, z
+	H = @(k,z) k+2*z;
+	[pts, weights] = generate_quadrature('gaussn',3);
+	[Kd,Kdag] = discretise_operator(H,pts,weights);
+	r35 = sqrt(3/5);
+	Ka = diag([5/18;4/9;5/18])*[1.5*(1-r35), 1+0.5*(1-r35), 0.5*(1-r35)+(1+r35);...
+		0.5+(1-r35), 1.5, 0.5+(1+r35);...
+		0.5*(1+r35)+(1-r35), 0.5*(1+r35)+1, 1.5*(1+r35)]';
+	[status, msg] = assert_eq(Ka, Kdag);
+end;
+
+
