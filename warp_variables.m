@@ -1,5 +1,5 @@
 %Takes a continuous kernel function defined on the rectangle
-%[ka,kb]x[za,zb] and perform a variable transformation
+%[ka,kb]x[0,Inf] and perform a variable transformation
 %to get the new kernel
 %H'(k', z'), defined on [0,1]x[0,1] with the property
 % S(k') = \int_0^1 H'(k',z')\chi(z') dz'
