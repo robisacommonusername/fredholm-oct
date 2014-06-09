@@ -30,7 +30,7 @@ function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, eps, weights,
 	mu = 0.5 * -2*lambda/(normK^2 - lambda);
 	
 	%error estimate
-	error_multiplier = mu*(1+normK^2/eps);
+	error_multiplier = mu;
 	abs_tol = tol*error_multiplier;
 	
 	iterations = 0;

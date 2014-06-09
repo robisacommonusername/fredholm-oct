@@ -1,5 +1,5 @@
 %Boilerplate
-function ret = test_operator_norm(varargin)
+function ret = test_solve_iteratively(varargin)
 	test_names = find_tests(mfilename());
 	tests={};
 	for ii = 1:length(test_names) 
