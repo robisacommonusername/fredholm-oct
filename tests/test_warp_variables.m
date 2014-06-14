@@ -15,10 +15,18 @@ end;
 function [status, msg] = integrate_lorentzian()
 	%\int_0^\infty \frac{k}{1+z^2} dz = \frac{k\pi}{2}
 	H = @(k,z) k/(1+z^2);
-	[Hbar, kbar, z] = warp_variables(H, 0, 1, 1);
+	[Hbar, kbar, z] = warp_variables(H, 0, 1, 1, 'atan');
 	k = 2;
 	int = quad(@(zz) Hbar(k,zz), 0, 1);
 	[status, msg] = assert_eq(int, pi);
+end;
+
+function [status, msg] = integrate_lorentzian_cutoff_lin_rescale()
+	H = @(k,z) k/(1+z^2);
+	[Hbar, kbar, z] = warp_variables(H, 0, 1, 2000, 'linear');
+	k = 2;
+	int = quad(@(zz) Hbar(k,zz), 0, 1);
+	[status, msg] = assert_eq(int, pi, 0.01); %cutoff is not an accurate method
 end;
 
 function [status, msg] = test_k_warp()
