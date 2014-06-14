@@ -1,5 +1,5 @@
-%Calculate regularisation parameter.
-
+%Calculate Tikhonov regularisation parameter.
+%
 %Need to specify the quadrature weights so that we can compute |K|
 %args
 %method: either 'disc' or 'lcurve'
@@ -23,8 +23,9 @@ function eps = regularise(varargin)
 			case 'disc'
 			if nargin >= 3
 				normK = varargin{ii};
-				delta = varargin{ii+1};
-				eps = normK/(1+delta);
+				snr = varargin{ii+1};
+				delta = 1/snr;
+				eps = normK^2/(1+delta);
 			else
 				disp('WARNING: insufficient parameters for discrepancy prnciple')
 				eps = 0;
