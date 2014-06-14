@@ -17,10 +17,10 @@ function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, eps, weights,
 	tol = 0.0001;
 	maxIters = 1000;
 	if nargin > 6
-		tol = vargin{2};
+		tol = varargin{2};
 	end;
 	if nargin > 7
-		maxIters = vargin{3};
+		maxIters = varargin{3};
 	end;
 	
 	%select relaxation parameter. 0.5 is a safety factor
@@ -30,9 +30,9 @@ function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, eps, weights,
 	mu = 0.5 * -2*lambda/(normK^2 - lambda);
 	
 	%error estimate
-	M = max([1-mu ; mu*normK^2/eps + mu - 1]);
-	error_multiplier = 1-M;
-	%error_multiplier = mu;
+	%M = max([1-mu ; mu*normK^2/eps + mu - 1]);
+	%error_multiplier = 1-M;
+	error_multiplier = mu;
 	abs_tol = tol*error_multiplier;
 	
 	iterations = 0;
