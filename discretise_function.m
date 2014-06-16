@@ -5,7 +5,7 @@
 %Just use linear interp. for now.
 %assume k in (0,1)
 
-function [Sd,new_pts] = discretise_function(Sexp, new_pts, varargin)
+function Sd = discretise_function(Sexp, new_pts, varargin)
 	if nargin > 3
 		sampling_points = varargin{1};
 		if nargin > 4

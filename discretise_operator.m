@@ -1,3 +1,5 @@
+% [Kd, Kdag] = discretise_operator(H, pts, weights, varargin)
+%
 %Discretise the fredholm operator K, by specifying
 %the kernel H(k,z), the number of discrete points n
 % and a quadrature method
