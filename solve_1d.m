@@ -26,25 +26,26 @@ function [chi, z_pts, error] = solve_1d(H, S, S_ki, A, A_ki, pen_depth, varargin
 	reg_method = 'disc';
 	snr_dB = 5;
 	
+	mand_params = 6;
 	%parse varargin
-	if nargin > 8 && varargin{1} ~= 0
+	if nargin >= mand_params+1 && varargin{1} ~= 0
 		n = varargin{1};
 	else
 		n = length(S);
 	end;
-	if nargin > 9 && varargin{2} ~= 0
+	if nargin >= mand_params+2 && varargin{2} ~= 0
 		tol = varargin{2};
 	end;
-	if nargin > 10 && varargin{3} ~= 0
+	if nargin >= mand_params+3 && varargin{3} ~= 0
 		maxIters = varargin{3};
 	end;
-	if nargin > 11
+	if  nargin >= mand_params+4
 		quad_method = varargin{4};
 	end;
-	if nargin > 12
+	if  nargin >= mand_params+5
 		reg_method = varargin{5};
 	end;
-	if nargin > 13
+	if  nargin >= mand_params+6
 		snr_dB = varargin{6};
 	end;	
 	
@@ -62,9 +63,9 @@ function [chi, z_pts, error] = solve_1d(H, S, S_ki, A, A_ki, pen_depth, varargin
 	[Kd, Kdag] = discretise_operator(Hbar, pts, weights, Abar);
 	
 	%Compute regularisation parameter
-	normK = operator_norm(Kbar,Kdagbar,weights);
+	normK = operator_norm(Kd,Kdag,weights);
 	eps = regularise('disc', normK, 10^(snr_dB/10));
-	
+	keyboard();
 	%solve equations
 	[chi, error] = solve_iteratively(Kd, Kdag, Sbar, eps, weights, tol, maxIters);
 	
