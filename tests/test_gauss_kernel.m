@@ -25,7 +25,7 @@ function [status, msg] = test_kernel()
 		z = 6*(rand(1,50)-1);
 		k = 6*(rand(1,50)-1);
 		a(ii,:) = arrayfun(handle, k, z);
-		b(ii,:) = arrayfun(@(k,z) 1/4/pi/(alpha(ii)^2/k^2+i*(z-z0(ii))/k) * exp (2*i*(z-z0(ii))*k)*exp(-1*Q(ii)^2/2*(alpha(ii)^2/2/k^2+i*(z-z0(ii))/2/k)),k,z);
+		b(ii,:) = arrayfun(@(k,z) 2*pi*i*1/4/pi/(alpha(ii)^2/k^2+i*(z-z0(ii))/k) * exp (2*i*(z-z0(ii))*k)*exp(-1*Q(ii)^2/2*(alpha(ii)^2/2/k^2+i*(z-z0(ii))/2/k)),k,z);
 	end;
 	%disp(a(1:3,1:3));
 	%disp(b(1:3,1:3));
