@@ -22,3 +22,14 @@ function [status,msg] = test_solver()
 	x_s = solve_iteratively(Kd, Kdag, S, eps, weights);
 	[status, msg] = assert_eq(x,x_s);
 end;
+
+function [status,msg] = test_with_init()
+	x = rand(5,1);
+	x0 = awgn(x,20);
+	Kd = rand(5,5);
+	eps = 0.02;
+	weights = ones(5,1);
+	S = inv(Kd')*(eps*(x-x0) + Kd'*Kd*x);
+	x_s = solve_iteratively(Kd, Kd', S, eps, weights, x0);
+	[status, msg] = assert_eq(x,x_s,0.0001);
+end;

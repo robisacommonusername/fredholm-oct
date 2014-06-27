@@ -31,9 +31,10 @@ function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, eps, weights,
 	end;
 	
 	%select relaxation parameter. 0.5 is a safety factor
-	%transform equation into form $(lambdaI - \hat{K})\chi = y$
-	y = -1*(Kdag*S+eps*x0);
+	%transform equation into form $(lambdaI - \hat{K})deltax = y$
+	%where chi = x0+deltax
 	lambda = -1*eps;
+	y = -1*(Kdag*S+eps*x0) - lambda*x0 + Kdag*(Kd*x0);
 	mu = 0.5 * -2*lambda/(normK^2 - lambda);
 	
 	%error estimate
@@ -44,13 +45,14 @@ function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, eps, weights,
 	
 	iterations = 0;
 	error = abs_tol + 1;
-	chi = (mu/lambda)*y;
+	deltax = (mu/lambda)*y;
 	while error > abs_tol && iterations < maxIters
-		chi_old = chi;
-		chi = (mu/lambda)*y + (1-mu)*chi + Kdag*(Kd*((mu/lambda)*chi));
-		error = sqrt(weights' * (chi - chi_old).^2);
+		deltax_old = deltax;
+		deltax = (mu/lambda)*y + (1-mu)*deltax + Kdag*(Kd*((mu/lambda)*deltax));
+		error = sqrt(weights' * (deltax - deltax_old).^2);
 		iterations = iterations + 1;
 	end;
+	chi = x0 + deltax;
 	
 	if iterations == maxIters
 		disp('WARNING: solve_iteratively returned after maximum number of iterations was exceeded');
