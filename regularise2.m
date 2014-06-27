@@ -30,5 +30,4 @@ function eps = regularise2(H, A, A_ki, S, S_ki, varargin)
 		otherwise
 		error('unknown method for selecting regularisation parameter, %s', method);
 	end;
-	keyboard();
 end
