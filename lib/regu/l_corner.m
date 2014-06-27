@@ -81,9 +81,9 @@ if (strncmp(method,'Tikh',4) | strncmp(method,'tikh',4))
   % Locate the corner.  If the curvature is negative everywhere,
   % then define the leftmost point of the L-curve as the corner.
   [gmin,gi] = min(g);
-  reg_c = fminbnd('lcfun',...
-    reg_param(min(gi+1,length(g))),reg_param(max(gi-1,1)),...
-    optimset('Display','off'),s,beta,xi); % Minimizer.
+  f = @(lambda) lcfun(lambda,s,beta,xi);
+  reg_c = fminbnd(f,...
+    reg_param(min(gi+1,length(g))),reg_param(max(gi-1,1))); % Minimizer.
   kappa_max = - lcfun(reg_c,s,beta,xi); % Maximum curvature.
 
   if (kappa_max < 0)
