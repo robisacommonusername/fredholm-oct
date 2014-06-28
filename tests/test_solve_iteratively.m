@@ -30,6 +30,7 @@ function [status,msg] = test_with_init()
 	eps = 0.02;
 	weights = ones(5,1);
 	S = inv(Kd')*(eps*(x-x0) + Kd'*Kd*x);
-	x_s = solve_iteratively(Kd, Kd', S, eps, weights, x0);
+	x_s = solve_iteratively(Kd, Kd', S, eps, weights,...
+		solve_iteratively_opts('x0',x0,'tol',0.0001,'max_iters',10000));
 	[status, msg] = assert_eq(x,x_s,0.0001);
 end;

@@ -2,34 +2,20 @@
 % KdagS = eps*(x-x0) + Kdag*K*x
 %
 function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, eps, weights, varargin)
-	%specify initial guess
+	%set up options
 	if nargin > 5
-		x0 = varargin{1};
+		opts = varargin{1};
 	else
-		x0 = zeros(length(S),1);
+		opts = solve_iteratively_opts(); %defaults
 	end;
-	
-	%allow user to specify |K| to prevent recalculating it
-	if nargin > 6
-		if varargin{2} ~= 0
-			normK = varargin{2};
-		else
-			normK = operator_norm(Kd,Kdag,weights);
-		end;
-	else
+	x0 = opts.x0;
+
+	if opts.norm_k == 0
 		normK = operator_norm(Kd,Kdag,weights);
+	else
+		normK = opts.norm_k;
 	end;
-	
-	%Default tolerance and maximum iterations
-	tol = 0.0001;
-	maxIters = 10000;
-	if nargin > 7
-		tol = varargin{3};
-	end;
-	if nargin > 8
-		maxIters = varargin{4};
-	end;
-	
+	keyboard();
 	%select relaxation parameter. 0.5 is a safety factor
 	%transform equation into form $(lambdaI - \hat{K})deltax = y$
 	%where chi = x0+deltax
@@ -41,12 +27,12 @@ function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, eps, weights,
 	%M = max([1-mu ; mu*normK^2/eps + mu - 1]);
 	%error_multiplier = 1-M;
 	error_multiplier = mu;
-	abs_tol = tol*error_multiplier;
+	abs_tol = opts.tol*error_multiplier;
 	
 	iterations = 0;
 	error = abs_tol + 1;
 	deltax = (mu/lambda)*y;
-	while error > abs_tol && iterations < maxIters
+	while error > abs_tol && iterations < opts.max_iters
 		deltax_old = deltax;
 		deltax = (mu/lambda)*y + (1-mu)*deltax + Kdag*(Kd*((mu/lambda)*deltax));
 		error = sqrt(weights' * (deltax - deltax_old).^2);
@@ -54,7 +40,7 @@ function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, eps, weights,
 	end;
 	chi = x0 + deltax;
 	
-	if iterations == maxIters
+	if iterations == opts.max_iters
 		disp('WARNING: solve_iteratively returned after maximum number of iterations was exceeded');
 	end;
 	
