@@ -9,49 +9,23 @@
 %pen_depth: approximate penetration depth of beam
 %mean_chi: average susceptibility, required for regularisation 
 %varargin
-%n: discretisation level, 0 for num points in S
-%tolerance, or 0 for default=0.001. Tolerance is RMS relative tolerance
-%maximum iterations, or 0 for default=1000;
-%quadrature method, default = gauss10
-%regularisation method: Actually the method of selecting a regularisation parameter
-%	either 'disc' or 'lcurve'
-%snr: SNR of S, in dB. Ignored when using lcurve. Default value is 5dB
+%create a solve_1d_opts structure to pass other params to the solver.
+% refer to solve_1d_opts.m for allowed fields
 
-function [chi, z_pts, error] = solve_1d(H, S, S_ki, A, A_ki, pen_depth, mean_chi, varargin)
-
-	%default parameters
-	mean_chi = 0.8125;
-	quad_method = 'gauss10';
-	maxIters = 1000;
-	tol = 0.001;
-	reg_method = 'lcurve';
-	snr_dB = 5;
-	
-	mand_params = 7;
-	%parse varargin
-	if nargin >= mand_params+1 && varargin{1} ~= 0
-		n = varargin{1};
+function [chi, z_pts, error] = solve_1d(H, S, S_ki, A, A_ki, pen_depth, varargin)
+	%set up solver options
+	if nargin > 6
+		opts = varargin{1};
 	else
-		n = length(S);
+		opts = solve_1d_opts();
 	end;
-	if nargin >= mand_params+2 && varargin{2} ~= 0
-		tol = varargin{2};
+	%if no discretisation level set, use number of points in S
+	if opts.n == 0
+		opts.n = length(S);
 	end;
-	if nargin >= mand_params+3 && varargin{3} ~= 0
-		maxIters = varargin{3};
-	end;
-	if  nargin >= mand_params+4
-		quad_method = varargin{4};
-	end;
-	if  nargin >= mand_params+5
-		reg_method = varargin{5};
-	end;
-	if  nargin >= mand_params+6
-		snr_dB = varargin{6};
-	end;	
 	
 	%Calculate quadrature points and weights
-	[pts, weights] = generate_quadrature(quad_method, n);
+	[pts, weights] = generate_quadrature(opts.quad_method, opts.n);
 	
 	%remap variable into [0,1]x[0,1]
 	[Hbar, kbar, z] = warp_variables(H, A_ki(1), A_ki(end), pen_depth);
@@ -65,7 +39,7 @@ function [chi, z_pts, error] = solve_1d(H, S, S_ki, A, A_ki, pen_depth, mean_chi
 	
 	%Compute regularisation parameter
 	normK = operator_norm(Kd,Kdag,weights);
-	eps = regularise2(Hbar, Abar, pts, Sbar, pts, reg_method);
+	eps = regularise2(Hbar, Abar, pts, Sbar, pts, opts.reg_method);
 	
 	%solve equations
 	
@@ -83,9 +57,9 @@ function [chi, z_pts, error] = solve_1d(H, S, S_ki, A, A_ki, pen_depth, mean_chi
 	%x_low = LHS\RHS;
 	%x0 = discretise_function(x_low, pts, pts_low);
 	
-	x0 = mean_chi*ones(length(Sbar),1);
+	x0 = opts.mean_chi*ones(length(Sbar),1);
 	%now use initial solution to guide iterative solver
-	[chi, error, iters] = solve_iteratively(Kd, Kdag, Sbar, eps, weights, x0, normK, tol, maxIters);
+	[chi, error, iters] = solve_iteratively(Kd, Kdag, Sbar, eps, weights, x0, normK, opts.tol, opts.max_iters);
 	
 	%unwarp z axis
 	z_pts = z(pts);

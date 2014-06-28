@@ -36,7 +36,8 @@ function [status, msg] = small_test_q0_gaussianbeam_10db()
 	[Sexp, k_i] = generate_test_data(301, chi, H, A, A_ki, 2*fwhm, 10);
 	
 	%attempt to recover solution
-	[chi_exp,z_exp] = solve_1d(H, Sexp, k_i, A, A_ki, fwhm, 0.8125,300);
+	[chi_exp,z_exp] = solve_1d(H, Sexp, k_i, A, A_ki, fwhm,...
+		solve_1d_opts('mean_chi',0.8125,'n',300));
 	plot(z_exp,chi_exp);
 	
 	status=0;
