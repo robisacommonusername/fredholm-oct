@@ -15,7 +15,7 @@ function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, eps, weights,
 	else
 		normK = opts.norm_k;
 	end;
-	keyboard();
+	
 	%select relaxation parameter. 0.5 is a safety factor
 	%transform equation into form $(lambdaI - \hat{K})deltax = y$
 	%where chi = x0+deltax

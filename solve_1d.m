@@ -59,7 +59,9 @@ function [chi, z_pts, error] = solve_1d(H, S, S_ki, A, A_ki, pen_depth, varargin
 	
 	x0 = opts.mean_chi*ones(length(Sbar),1);
 	%now use initial solution to guide iterative solver
-	[chi, error, iters] = solve_iteratively(Kd, Kdag, Sbar, eps, weights, x0, normK, opts.tol, opts.max_iters);
+	[chi, error, iters] = solve_iteratively(Kd, Kdag, Sbar, eps, weights,...
+		solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
+			'max_iters',opts.max_iters));
 	
 	%unwarp z axis
 	z_pts = z(pts);
