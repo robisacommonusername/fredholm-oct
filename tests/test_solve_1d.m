@@ -3,10 +3,10 @@ function ret = test_solve_1d(varargin)
 	test_names = find_tests(mfilename());
 	tests={};
 	for ii = 1:length(test_names) 
-		tests(ii) = str2func(test_names(ii)); 
+		tests{ii} = str2func(test_names{ii}); 
 	end;
 	ret = run_tests(tests, test_names);
-end;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %TEST FUNCTIONS
@@ -42,4 +42,4 @@ function [status, msg] = small_test_q0_gaussianbeam_10db()
 	
 	status=0;
 	msg = 'pass';
-end;
+end

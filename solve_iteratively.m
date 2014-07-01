@@ -9,6 +9,9 @@ function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, eps, weights,
 		opts = solve_iteratively_opts(); %defaults
 	end;
 	x0 = opts.x0;
+    if x0 == 0
+        x0 = zeros(length(S),1);
+    end;
 
 	if opts.norm_k == 0
 		normK = operator_norm(Kd,Kdag,weights);

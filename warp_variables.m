@@ -31,7 +31,7 @@ function [Hbar, kbar, z] = warp_variables(H, ka, kb, zf, varargin)
 		%This remapping is therefore numerically unstable, and in practice
 		%a smooting term should be introduced. Use atan_smooth
 		z = @(zbar) zf*tan(zbar*pi/2);
-		Hbar = @(ki, zi) H((kb-ka)*ki+ka, zf*tan(zi*pi/2))*zf*pi*0.5*sec(zi*pi/2)^2;
+		Hbar = @(ki, zi) H((kb-ka)*ki+ka, zf*tan(zi*pi/2))*zf*pi*0.5.*sec(zi*pi/2).^2;
 		
 		case 'linear'
 		%cut off integration at zf, then rescale linearly
@@ -46,7 +46,7 @@ function [Hbar, kbar, z] = warp_variables(H, ka, kb, zf, varargin)
 		%term to force chi to zero as z->infinity. Smooths out the poles
 		%introduced by dz/dzbar ~ sec^2(zbar)
 		z = @(zbar) zf*tan(zbar*pi/2);
-		Hbar = @(ki, zi) H((kb-ka)*ki+ka, z(zi))/(1+exp(gamma*(z(zi)-zf)))*zf*pi*0.5*sec(zi*pi/2)^2;
+		Hbar = @(ki, zi) H((kb-ka)*ki+ka, z(zi))/(1+exp(gamma*(z(zi)-zf)))*zf*pi*0.5.*sec(zi*pi/2).^2;
 		
 		otherwise
 		disp('WARNING: unrecognised variable warping method. Falling back to linear');

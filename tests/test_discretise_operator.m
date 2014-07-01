@@ -3,10 +3,10 @@ function ret = test_discretise_operator(varargin)
 	test_names = find_tests(mfilename());
 	tests={};
 	for ii = 1:length(test_names) 
-		tests(ii) = str2func(test_names(ii)); 
+		tests{ii} = str2func(test_names{ii}); 
 	end;
 	ret = run_tests(tests, test_names);
-end;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %TEST FUNCTIONS
@@ -18,7 +18,7 @@ function [status, msg] = test_trivial()
 	[Kd, Kdag] = discretise_operator(H, pts, weights);
 	Ka = 0.5*[exp(-1/8) exp(-5/8); exp(-5/8) exp(-9/8)];
 	[status, msg] = assert_eq(Ka, Kd);
-end;
+end
 
 function [status, msg] = test_with_A()
 	H = @(k,z) exp(-(k^2+z^2));
@@ -27,7 +27,7 @@ function [status, msg] = test_with_A()
 	[Kd, Kdag] = discretise_operator(H, pts, weights,A);
 	Ka = 0.5*[exp(-1/8) exp(-5/8); 2*exp(-5/8) 2*exp(-9/8)];
 	[status, msg] = assert_eq(Ka, Kd);
-end;
+end
 
 function [status, msg] = test_gauss_legendre3()
 	%use a kernel not symmetric in k, z
@@ -39,7 +39,7 @@ function [status, msg] = test_gauss_legendre3()
 		0.5+(1-r35), 1.5, 0.5+(1+r35);...
 		0.5*(1+r35)+(1-r35), 0.5*(1+r35)+1, 1.5*(1+r35)]*diag([5/18;4/9;5/18]);
 	[status, msg] = assert_eq(Ka, Kd);
-end;
+end
 
 function [status, msg] = test_gauss_legendre3_adjoint()
 	%use a kernel not symmetric in k, z
@@ -51,6 +51,6 @@ function [status, msg] = test_gauss_legendre3_adjoint()
 		0.5+(1-r35), 1.5, 0.5+(1+r35);...
 		0.5*(1+r35)+(1-r35), 0.5*(1+r35)+1, 1.5*(1+r35)])*diag([5/18;4/9;5/18]);
 	[status, msg] = assert_eq(Ka, Kdag);
-end;
+end
 
 

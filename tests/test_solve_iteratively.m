@@ -3,10 +3,10 @@ function ret = test_solve_iteratively(varargin)
 	test_names = find_tests(mfilename());
 	tests={};
 	for ii = 1:length(test_names) 
-		tests(ii) = str2func(test_names(ii)); 
+		tests{ii} = str2func(test_names{ii}); 
 	end;
 	ret = run_tests(tests, test_names);
-end;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %TEST FUNCTIONS
@@ -21,7 +21,7 @@ function [status,msg] = test_solver()
 	S = inv(Kdag)*(eps*eye(3)+Kdag*Kd)*x;
 	x_s = solve_iteratively(Kd, Kdag, S, eps, weights);
 	[status, msg] = assert_eq(x,x_s);
-end;
+end
 
 function [status,msg] = test_with_init()
 	x = rand(5,1);
@@ -33,4 +33,4 @@ function [status,msg] = test_with_init()
 	x_s = solve_iteratively(Kd, Kd', S, eps, weights,...
 		solve_iteratively_opts('x0',x0,'tol',0.0001,'max_iters',10000));
 	[status, msg] = assert_eq(x,x_s,0.0001);
-end;
+end

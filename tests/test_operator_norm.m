@@ -3,10 +3,10 @@ function ret = test_operator_norm(varargin)
 	test_names = find_tests(mfilename());
 	tests={};
 	for ii = 1:length(test_names) 
-		tests(ii) = str2func(test_names(ii)); 
+		tests{ii} = str2func(test_names{ii}); 
 	end;
 	ret = run_tests(tests, test_names);
-end;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %TEST FUNCTIONS
@@ -23,7 +23,7 @@ function [status,msg] = test_real_L2_equiv()
 		results_matlab(ii) = norm(A);
 	end;
 	[status, msg] = assert_eq(results_testfn, results_matlab);
-end;
+end
 
 function [status, msg] = test_complex_L2_equiv()
 	%same as previous test, but use complex matrices
@@ -35,7 +35,7 @@ function [status, msg] = test_complex_L2_equiv()
 		results_matlab(ii) = norm(A);
 	end;
 	[status, msg] = assert_eq(results_testfn, results_matlab);
-end;
+end
 
 function [status, msg] = test_alternative_quadratures()
 	%we should be able to use alternative quadratures, but get similar
@@ -49,7 +49,7 @@ function [status, msg] = test_alternative_quadratures()
 	norm_gauss = operator_norm(Kd1,Kdag1,weights1);
 	norm_simps = operator_norm(Kd2,Kdag2,weights2);
 	[status, msg] = assert_eq(norm_gauss, norm_simps);
-end;
+end
 
 function [status, msg] = test_convergence()
 	%ensure convergence when dominant eigenvalues are very close
@@ -67,4 +67,4 @@ function [status, msg] = test_convergence()
 	status = 0;
 	msg = 'PASS';
 	
-end;
+end

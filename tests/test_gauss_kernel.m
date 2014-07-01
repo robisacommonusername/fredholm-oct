@@ -3,10 +3,10 @@ function ret = test_gauss_kernel(varargin)
 	test_names = find_tests(mfilename());
 	tests={};
 	for ii = 1:length(test_names) 
-		tests(ii) = str2func(test_names(ii)); 
+		tests{ii} = str2func(test_names{ii}); 
 	end;
 	ret = run_tests(tests, test_names);
-end;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %TEST FUNCTIONS
@@ -30,4 +30,4 @@ function [status, msg] = test_kernel()
 	%disp(a(1:3,1:3));
 	%disp(b(1:3,1:3));
 	[status, msg] = assert_eq(a,b);
-end;
+end
