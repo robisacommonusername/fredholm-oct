@@ -6,9 +6,9 @@
 %assume k in (0,1)
 
 function Sd = discretise_function(Sexp, new_pts, varargin)
-	if nargin > 3
+	if nargin > 2
 		sampling_points = varargin{1};
-		if nargin > 4
+		if nargin > 3
 			%user has specified a warping function kbar(k). Thus we warp
 			%the sampling points ki to kbar(ki). Note that the warping
 			%function must be able to be called on a vector. This is the
