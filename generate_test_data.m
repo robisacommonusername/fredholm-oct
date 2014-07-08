@@ -18,7 +18,8 @@
 
 function [Sexp, k_i] = generate_test_data(n, chi, H, A, A_ki, alpha, snr_db)
 	[pts, weights] = generate_quadrature('simpson',n);
-	chibar = chi(alpha*tan(pts*pi/2));
+	%use linear remapping
+	chibar = chi(alpha*pts);
 	k_min = A_ki(1);
 	k_max = A_ki(end);
 	
