@@ -12,9 +12,9 @@ end
 %TEST FUNCTIONS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [status,msg] = test_gaussian_kernel()
+function [status,msg] = reproduce_gaussian_kernel()
 	%We should be able to recreate the gaussian kernel
-	alpha = pi;
+	alpha = 10;
 	z0 = 0;
 	Q=[0,0];
 	H1 = gauss_kernel(norm(Q),alpha,z0);
