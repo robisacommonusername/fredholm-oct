@@ -4,8 +4,18 @@
 %Always uses tikhonov regularisation
 %
 % Section copyright Per Christian Hansen
-function regu = lcurve_calculate_eps(Kd, Sbar)
+function regu = lcurve_calculate_eps(Kd, Kdag, Sbar)
 	%This is ok, as we're using a low order discretisation
+	
+	
+	%We need to calculate the left and right singular vectors manually
+	%rather than just using svd, since Kd* != Kdag in general (i.e when
+	%the quad points are not equally spaced). Ok for trivial quadrarure
+	%though.
+	%[U,s2] = eig(Kd*Kdag);
+	%[V,s2] = eig(Kdag*Kd);
+	%sm = sqrt(s2);
+	%Need to sort the singular values and singular vectors
 	[U,sm,V] = csvd(Kd);
 	b = Sbar;
 	

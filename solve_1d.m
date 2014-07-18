@@ -1,7 +1,7 @@
-%Solve a 1d fredholm problem
+%Solve a 1d fredholm problem, using fastcall object
 % 
 %Paramaters
-%H: kernel function in variables k,z
+%f: fastcall function
 %S: recorded interferometric data as a function of k (vector)
 %S_ki: sampling points of S in k domain
 %A: source spectrum as function of k (vector).
@@ -12,7 +12,7 @@
 %create a solve_1d_opts structure to pass other params to the solver.
 % refer to solve_1d_opts.m for allowed fields
 
-function [chi, z_pts, error] = solve_1d(H, S, S_ki, A, A_ki, pen_depth, varargin)
+function [chi, z_pts, error] = solve_1d(f, S, S_ki, A, A_ki, pen_depth, varargin)
 	%set up solver options
 	if nargin > 6
 		opts = varargin{1};
@@ -28,18 +28,28 @@ function [chi, z_pts, error] = solve_1d(H, S, S_ki, A, A_ki, pen_depth, varargin
 	[pts, weights] = generate_quadrature(opts.quad_method, opts.n);
 	
 	%remap variable into [0,1]x[0,1]
-	[Hbar, kbar, z] = warp_variables(H, A_ki(1), A_ki(end), pen_depth);
+	ka = A_ki(1);
+	kb = A_ki(end);
+	zf = pen_depth;
+	[kbar,k, zbar, z, deriv] = warp_variables(ka,kb,zf);
 	
 	%resample S and A at the appropriate sampling points
 	Sbar = discretise_function(S, pts, kbar(S_ki));
 	Abar = discretise_function(A, pts, kbar(A_ki));
 	
 	%construct discretised operator and its adjoint
-	[Kd, Kdag] = discretise_operator(Hbar, pts, weights, Abar);
+	fast_opts = fastcall_opts('quad_method', opts.quad_method,'n',opts.n);
+	[Kd, Kdag] = f(Abar,ka,kb,zf,0,fast_opts);
+	
+	%Construct low order discretisation of K
+	[pts_low,weights_low] = generate_quadrature(fast_opts.quad_method_low,fast_opts.n_low);
+	Sbar_low = discretise_function(S, pts_low, kbar(S_ki));
+	Abar_low = discretise_function(A, pts_low, kbar(A_ki));
+	[Kd_low, Kdag_low] = f(Abar_low,ka,kb,zf,1);
 	
 	%Compute regularisation parameter
 	normK = operator_norm(Kd,Kdag,weights);
-	eps = regularise2(Hbar, Abar, pts, Sbar, pts, opts.reg_method);
+	eps = regularise2(Kd_low, Kdag_low, Sbar_low, opts.reg_method);
 	
 	%solve equations
 	

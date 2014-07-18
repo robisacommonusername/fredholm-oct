@@ -24,7 +24,8 @@ function [status, msg] = small_test_q0_gaussianbeam_10db()
 	z = -1*fwhm:(fwhm/300):2*fwhm;
 	
 	%gauss kernel Q=0, with thin object. Focal plane at z=half power point
-	H = gauss_kernel(0,alpha,fwhm/2);
+	f = fastcall_gauss_kernel(0,alpha,fwhm/2,fastcall_opts('n',301,'quad_method','simpson'));
+	%H = gauss_kernel(0,alpha,fwhm/2);
 	
 	%flat spectrum, unit power
 	step = (kmax-kmin)/300;
@@ -32,11 +33,17 @@ function [status, msg] = small_test_q0_gaussianbeam_10db()
 	A = ones(1,length(A_ki));
 	A = A/trapz(A_ki, A); %normailse power
 	
+	zf = fwhm;
+	[Kd,Kdag,pts,kfunc,zfunc,der] = f(A,kmin,kmax,zf,0);
+	Sexp = Kd*arrayfun(chi,pts);
+	k_i = kfunc(pts);
+	keyboard();
 	%generate experimental data, 300 points, 
-	[Sexp, k_i] = generate_test_data(301, chi, H, A, A_ki, 2*fwhm, 10);
+	%[Sexp, k_i] = generate_test_data(301, chi, H, A, A_ki, 2*fwhm, 10);
 	
+	f2 = fastcall_gauss_kernel(0,alpha,fwhm/2,fastcall_opts('n',300,'quad_method','gauss10'));
 	%attempt to recover solution
-	[chi_exp,z_exp] = solve_1d(H, Sexp, k_i, A, A_ki, fwhm,...
+	[chi_exp,z_exp] = solve_1d(f2, Sexp, k_i, A, A_ki, fwhm,...
 		solve_1d_opts('mean_chi',0.8125,'n',300));
 	plot(z_exp,chi_exp);
 	

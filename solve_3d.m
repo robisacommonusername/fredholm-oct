@@ -1,7 +1,7 @@
 %Solve a 3D OCT problem, including the Fourier transforms
 %
 %Usage:
-%[chi, rx, ry, rz, error] = solve_3d(S, S_xi, S_yi, S_ki, H, A, A_ki,...
+%[chi, rx, ry, rz, error] = solve_3d(S, S_xi, S_yi, S_ki, f, A, A_ki,...
 %	pen_depth, varargin)
 %
 %Input Parameters
@@ -12,12 +12,10 @@
 %	S_xi, S_yi, S_ki: Sampling points of S. S_xi and S_yi must contain
 %	uniformally spaced sampling points, S_ki need not
 %
-%	H: Fredholm kernel. H should be a function handle that
-%	accepts arguments Qx, Qy, and returns a 1D kernel function of (k,z).
-%	i.e if R represents reals, and C the complex numbers, then
-%	H: (RxR) -> ((RxR) -> C)
+%	f: Fastcall kernel. f should be a function handle that
+%	accepts arguments Qx, Qy, and returns a 1D fastcall kernel generator
 %	For example, use 
-%		H = @(Qx,Qy) gaussian_beam(sqrt(Qx^2+Qy^2),0.1,1);
+%		f = @(Qx,Qy) fastcall_gauss_kernel(sqrt(Qx^2+Qy^2),alpha,z0);
 %	 to set alpha and z0 on gaussian beam
 %
 %	A: Source spectrum envelope
@@ -69,8 +67,8 @@ function [chi, rx, ry, rz, error] = solve_3d(S, S_xi, S_yi, S_ki, H, A, A_ki, pe
 	%these loops can be parallelised
 	for ix = 1:ix_max
 		for iy = 1:iy_max
-			H1d = H(Qx(ix), Qy(iy));
-			[chiz, z_pts, error] = solve_1d(H1d, Stilde(ix,iy,:), S_ki,...
+			f1d = f(Qx(ix), Qy(iy));
+			[chiz, z_pts, error] = solve_1d(f1d, Stilde(ix,iy,:), S_ki,...
 				A, A_ki, pen_depth, opts_1d );
 			Stilde(ix,iy,:) = chiz; %reuse memory
 		end;
