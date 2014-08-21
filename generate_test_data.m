@@ -1,4 +1,5 @@
 %Create dummy interferometric data in 1 dimension
+%DEPRECTATE THIS FUNCTION??
 %
 %params
 %Return values
@@ -8,7 +9,7 @@
 %inputs
 %n: number of points to use
 %chi: function handle describing variation of chi sown the z axis
-%H: kernel function
+%f: fastcall kernel function
 %A: spectrum envelope, sampled in k domain
 %A_ki: sampling points in k domain
 %alpha: warping parameter
@@ -16,7 +17,7 @@
 %
 %use simpson quadrature, as this gives us equally spaced sampling points (more realistic)
 
-function [Sexp, k_i] = generate_test_data(n, chi, H, A, A_ki, alpha, snr_db)
+function [Sexp, k_i] = generate_test_data(chi, f, fast A, A_ki, alpha, snr_db)
 	[pts, weights] = generate_quadrature('simpson',n);
 	%use linear remapping
 	chibar = chi(alpha*pts);

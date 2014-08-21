@@ -24,23 +24,24 @@ function regu = lcurve_calculate_eps(Kd, Kdag, Sbar)
 	
 	[m,n] = size(U);
 	[p,ps] = size(sm);
-	beta = U'*b;
+	beta = U'*b; % <U,b> for all the U vectors simultaneously
 	beta2 = norm(b)^2 - norm(beta)^2;
 	if (ps==1)
 		s = sm; beta = beta(1:p);
 	else
 		s = sm(p:-1:1,1)./sm(p:-1:1,2); beta = beta(p:-1:1);
 	end;
-	xi = beta(1:p)./s;
+	xi = beta(1:p)./s; %unregularised solution
+	%could apply 2k lowpass to xi when we modify this function
 	
-	eta = zeros(npoints,1); rho = eta;
-	s2 = s.^2;
+	eta = zeros(npoints,1); rho = eta; %eta = |x|, rho = |Ax-b|
+	s2 = s.^2; %singular values squared
 	smallest_reg_param = max([s(p),s(1)*smin_ratio]);
 	reg_param = transpose(logspace(log10(s(1)), log10(smallest_reg_param), npoints));
 	for i=1:npoints
 		f = s2./(s2 + reg_param(i)^2);
 		eta(i) = norm(f.*xi);
-		rho(i) = norm((1-f).*beta(1:p));
+		rho(i) = norm((1-f).*beta(1:p)); 
 	end;
 	if (m > n & beta2 > 0)
 		rho = sqrt(rho.^2 + beta2);
