@@ -10,12 +10,8 @@ function eps = regularise2(Kd, Kdag, Sbar, varargin)
 		end;
 	end;
 	if nargin > 4
-		delta = varargin{2};
-	elseif strcmp(method,'disc')
-		error('no delta parameter specified for use with discrepancy principle');
+		opts = varargin{2};
 	end;
-
-	%[U,sig,V] = csvd(Kd);
 	
 	eps = 0;
 	switch (method)
@@ -23,6 +19,8 @@ function eps = regularise2(Kd, Kdag, Sbar, varargin)
 		%[x_delta, eps] = discrep(U,sig,V,Sbar,delta,0.69*ones(32,1));
 		case 'lcurve'
 		eps = lcurve_calculate_eps(Kd, Kdag, Sbar);
+		case 'lcurve_lpf'
+		eps = lcurve_calculate_eps_lpf(Kd, Kdag, Sbar, opts.Wc);
 		otherwise
 		error('unknown method for selecting regularisation parameter, %s', method);
 	end;

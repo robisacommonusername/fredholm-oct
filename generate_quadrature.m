@@ -54,6 +54,7 @@ function [pts, weights] = generate_quadrature(method, n)
 		case 'clenshawcurtis10'
 		
 		case 'clenshawcurtisn'
+		%UNTESTED - DO NOT USE
 		%n point clenshaw curtis quadrature. Evaluation points
 		%are the roots of the first kind Chebyshev polynomials
 		%Tn(x) = cos (n acos(x)) = 0

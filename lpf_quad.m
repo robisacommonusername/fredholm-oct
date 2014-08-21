@@ -1,7 +1,7 @@
 %points must be in interval [0,1]
 function psi_l = lpf_quad(psi, pts, wc)
 	%work out nyquist rate and new sampling points. Sample at double Nyquist
-	Ts = 0.25*max(diff(pts));
+	Ts = 0.5*max(diff(pts));
 	even_pts = 0:Ts:1;
 	N = length(even_pts);
 	
@@ -18,16 +18,10 @@ function psi_l = lpf_quad(psi, pts, wc)
 	while (err > tol && iters < max_iters)
 		psi_interp = interp1(pts, delta_psi, even_pts, 'linear','extrap');
 		%perform fft on interpolated data
-		%OCTAVE AND MATLAB DON't USE SAME FFT CONVENTION - CHECK!!
-		%matlab seems to use a weird convention for its fft, e.g.
-		%fft(sin(x)) -> i/2*(delta(x+1)-delta(x-1)), thus if we try to
-		%use the usual interpolation formulas, we get the wrong results
-		%(sin will be negated). Therefore, seem to need to take a conjugate
 		X = fft(psi_interp); 
-		
 		%filter data in freq domain - cutoff at wc
-		Nc = ceil(wc*Ts/2/pi)+2; %todo - windowing, etc. +2 is required (not +1) due to matlab 1 based indexing
-		X(Nc:end-Nc) = 0; %this will give us Gibbs?
+		Nc = ceil(N*wc*Ts/2/pi); %todo - windowing, etc
+		X(Nc:end-Nc+1) = 0; %this will give us Gibbs?
 	
 		%reconstruct at the quadrature points using trig interpolating
 		%polynomial. 
@@ -36,16 +30,16 @@ function psi_l = lpf_quad(psi, pts, wc)
 		%https://en.wikipedia.org/wiki/Discrete_Fourier_transform#Trigonometric_interpolation_polynomial
 		if (mod(N,2) == 0)
 			%even length sequence - need to handle F=0.5 separately
-			k = [0:N/2-1, 0, -1*(N/2-1):-1];
+			k = [0:(N/2-1), 0, (-1*(N/2-1)):-1];
 			[kk,t] = meshgrid(k,pts);
 			nyquist_terms = X(N/2+1)*cos(N*pi*pts); %F=0.5. N/2+1 due to matlab 1 indexing
 			%We have to explicitly use transpose, not ', as ' will do a 
 			%complex transpose by default for a complex vector - not what
 			%we want. THIS was a very annoying bug to track down
-			psi_l = psi_l + 1/N*(exp(2*pi*i*kk.*t)*transpose(X)) + transpose(nyquist_terms);
+			psi_l = psi_l + 1/N*(exp(2*pi*i*kk.*t)*transpose(X)) + nyquist_terms;
 		else
 			%odd length sequence
-			k = [0:floor(N/2), -1*floor(N/2):-1];
+			k = [0:floor(N/2), (-1*floor(N/2)):-1];
 			[kk,t] = meshgrid(k,pts);
 			%As before, use transpose explicitly, don't do X'
 			psi_l = psi_l + 1/N*(exp(2*pi*i*kk.*t)*transpose(X));
@@ -55,5 +49,8 @@ function psi_l = lpf_quad(psi, pts, wc)
 		delta_psi = psi - psi_l;
 		err = trapz(pts,abs(delta_psi));
 		iters = iters+1;
+	end;
+	if (iters == max_iters)
+		disp('WARNING: Voronoi method returned after exceeding maximum number of iterations');
 	end;
 end

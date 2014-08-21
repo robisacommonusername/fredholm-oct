@@ -3,25 +3,32 @@
 %t = solve_1d_opts('key1',val1,'key2',val2,...)
 %
 % Allowed keys are
+%	solver: specify an iterative solver for the second kind equation.
+%		Recognised values:
+%		'richardson_lpf': default, richardson iteration with projection
+%			into subspace of low pass functions
+%		'richardson': as above, but without the projection. Vulnerable
+%			to noise
 % 	n:
 %	mean_chi:
 %	quad_method:
 %	max_iters:
 %	tol:
 %	reg_method:
-%	snr_db:
+%	reg_opts:
 %
 
 function opts = solve_1d_opts(varargin)
 	%set up default values
 	opts = struct(...
+		'solver', 'richardson_lpf',...
 		'n',0,...
 		'mean_chi',0.8125,...
 		'quad_method', 'gauss10',...
-		'max_iters',10000,...
+		'max_iters',10,...
 		'tol', 0.0001,...
-		'reg_method','lcurve',...
-		'snr_db', 10);
+		'reg_method','lcurve_lpf',...
+		'reg_opts',struct());
 	
 	key = '';
 	ii = 1;

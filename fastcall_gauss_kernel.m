@@ -32,5 +32,7 @@ function [Kd,Kdag,pts,k,z,deriv] = fastcall_gauss_worker(Abar,ka,kb,zf,Q,alpha,z
 	
 	[pts, weights] = generate_quadrature(quad_method, n);
 	
+	%This step is very slow (it was what we were trying to avoid by creating
+	%the fastcall interface), so rewrite it.
 	[Kd, Kdag] = discretise_operator(@(kk,zz) H(k(kk), z(zz))*deriv(zz), pts, weights, Abar);
 end

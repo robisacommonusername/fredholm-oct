@@ -3,75 +3,111 @@
 %Paramaters
 %f: fastcall function
 %S: recorded interferometric data as a function of k (vector)
-%S_ki: sampling points of S in k domain
 %A: source spectrum as function of k (vector).
-%A_ki: sampling points of A(k) in k domain
-%pen_depth: approximate penetration depth of beam
+%ki: sampled wavenumbers for S and A
+%zf: sample thickness
 %mean_chi: average susceptibility, required for regularisation 
 %varargin
 %create a solve_1d_opts structure to pass other params to the solver.
 % refer to solve_1d_opts.m for allowed fields
 
-function [chi, z_pts, error] = solve_1d(f, S, S_ki, A, A_ki, pen_depth, varargin)
+function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 	%set up solver options
-	if nargin > 6
+	if nargin > 5
 		opts = varargin{1};
 	else
 		opts = solve_1d_opts();
 	end;
-	%if no discretisation level set, use number of points in S
+	
+	%determine max and min wavenumber - swap if necessary
+	kmin = ki(1);
+	kmax = ki(end);
+	if kmax < kmin
+		ki = flipdim(ki);
+		S = flipdim(S);
+		A = flipdim(A);
+		kmin = ki(1);
+		kmax = ki(end);
+	end;
+	
+	%if no discretisation level set, set based on Diffraction limit - let
+	%'Nyquist' rate be 1.5 times diffraction limit. 1.5 is somewhat arbitrary magic number,
+	%just chosen different from 1 to gives us some design margin
+	%Note that quad points aren't equally spaced, hence 'Nyquist' rate = 1/2max(Ts)
 	if opts.n == 0
-		opts.n = length(S);
+		Nyquist = 1.5*2*kmax*zf;
+		max_sample_period = 0.5/Nyquist;
+		opts.n = quad_points_needed(opts.quad_method,max_sample_period);
 	end;
 	
 	%Calculate quadrature points and weights
 	[pts, weights] = generate_quadrature(opts.quad_method, opts.n);
 	
-	%remap variable into [0,1]x[0,1]
-	ka = A_ki(1);
-	kb = A_ki(end);
-	zf = pen_depth;
-	[kbar,k, zbar, z, deriv] = warp_variables(ka,kb,zf);
+	%determine transformations to remap variable into [0,1]x[0,1]
+	[kbar,k, zbar, z, deriv] = warp_variables(kmin,kmax,zf);
+	kbari = kbar(ki);
 	
-	%resample S and A at the appropriate sampling points
-	Sbar = discretise_function(S, pts, kbar(S_ki));
-	Abar = discretise_function(A, pts, kbar(A_ki));
+	%resample S and A at the appropriate sampling points (Not required if
+	% 'quad_method' is 'trivial', 'simpson' or other Newton-Cotes rule)
+	Sbar = discretise_function(S, pts, kbari);
+	Abar = discretise_function(A, pts, kbari);
 	
 	%construct discretised operator and its adjoint
 	fast_opts = fastcall_opts('quad_method', opts.quad_method,'n',opts.n);
-	[Kd, Kdag] = f(Abar,ka,kb,zf,0,fast_opts);
+	[Kd, Kdag] = f(Abar,kmin,kmax,zf,0,fast_opts);
 	
 	%Construct low order discretisation of K
 	[pts_low,weights_low] = generate_quadrature(fast_opts.quad_method_low,fast_opts.n_low);
-	Sbar_low = discretise_function(S, pts_low, kbar(S_ki));
-	Abar_low = discretise_function(A, pts_low, kbar(A_ki));
-	[Kd_low, Kdag_low] = f(Abar_low,ka,kb,zf,1);
+	Sbar_low = discretise_function(S, pts_low, kbari);
+	Abar_low = discretise_function(A, pts_low, kbari);
+	[Kd_low, Kdag_low] = f(Abar_low,kmin,kmax,zf,1);
 	
 	%Compute regularisation parameter
 	normK = operator_norm(Kd,Kdag,weights);
-	eps = regularise2(Kd_low, Kdag_low, Sbar_low, opts.reg_method);
+	%if we're using lcurve_lpf, compute diffraction limit and cutoff
+	reg_opts = opts.reg_opts;
+	if strcmp(opts.reg_method,'lcurve_lpf')
+		wc = 2*kmax*zf; %diffraction limit for non-dimensionalised form
+		%Work out spatial sampling for low order approximation
+		fs = fast_opts.n_low; %Non dimensionalised version samples [0,1] => sampling freq is just number of samples (assume equally spaced)
+		Wc = wc/fs;
+		reg_opts = setfield(reg_opts,'Wc',Wc);
+	end;
+	eps = regularise2(Kd_low, Kdag_low, Sbar_low, opts.reg_method, reg_opts);
 	
 	%solve equations
-	
-	%first find an approximate solution using low order discretisation
-	%and gaussian elimination. Select order of discretisation
-	%n_low = max([floor(n^(2/3)/10), 10]);
-	%[pts_low, weights_low] = generate_quadrature(quad_method, n_low);
-	%Abar_low = discretise_function(A, pts_low, kbar(A_ki));
-	%[Kd_low, Kdag_low] = discretise_operator(Hbar, pts_low, weights_low, Abar_low);
-	%LHS = eps*eye(n_low)+Kdag_low*Kd_low;
-	%Sbar_low = discretise_function(S, pts_low, kbar(S_ki));
-	%average_susceptibility = 0.825;
-	%RHS = Kdag_low*Sbar_low + eps*mean_chi*ones(n_low,1);
-	%LHS = eye(n_low) + Kdag_low*Kd_low;
-	%x_low = LHS\RHS;
-	%x0 = discretise_function(x_low, pts, pts_low);
-	
 	x0 = opts.mean_chi*ones(length(Sbar),1);
-	%now use initial solution to guide iterative solver
-	[chi, error, iters] = solve_iteratively(Kd, Kdag, Sbar, eps, weights,...
-		solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
-			'max_iters',opts.max_iters));
+	switch (opts.solver)
+		case 'richardson_lpf'
+			[chi, error, iters] = solve_iteratively_lpf(Kd, Kdag, Sbar, eps, pts, weights, 2*kmax*zf,...
+			solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
+				'max_iters',opts.max_iters));
+		case 'richardson'
+			[chi, error, iters] = solve_iteratively(Kd, Kdag, Sbar, eps, weights,...
+			solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
+				'max_iters',opts.max_iters));
+		otherwise
+			disp('WARNING: Unrecognised solver specified. Falling back to QR');
+			%Fallback/reference solver. This actually works ok on Octave,
+			%because octave automatically finds least squares solutions
+			%for ill-conditioned linear systems. On Matlab, it will
+			%potentially fail (Matlab naively uses QR solver regardless
+			%of conditioning). Failure is particularly likely on Matlab
+			%with the 'lcurve_lpf' regularisation, as this method will
+			%tend to select smaller regularisation parameters.
+			%Regardless of whether it works, it will be slow, because
+			%We need to compute eps*I+Kdag*K explicitly (N^3), rather than iterative
+			%solvers which are N^2. There is also a loss of precision from doing
+			%this explicitly
+			
+			%solve Kdag*Sbar = eps(x-x0) + Kdag*K*x
+			b = Kdag*Sbar + eps*x0;
+			A = eps*eye(opts.n) + Kdag*Kd;
+			error = 0;
+			iters = 1;
+			chi = A\b;
+	end
+	
 	
 	%unwarp z axis
 	z_pts = z(pts);
