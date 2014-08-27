@@ -40,7 +40,10 @@ function [status, msg] = test_sinc_trivial()
 	end;
 end
 
-function [status, msg] = test_sinc_gauss_10()
+function [status, msg] = test_sinc_gauss10()
+	%This test is to ensure that the filter works correctly for non trivial
+	%quadratures
+	
 	%A low pass filtered sinc should give us a sinc at a lower frequency
 	[pts,weights] = generate_quadrature('gauss10',90); %this is equivalent to previous, but we need extra points
 	x = sinc(20*pts - 10);
@@ -53,7 +56,7 @@ function [status, msg] = test_sinc_gauss_10()
 	plot(pts,sinc(10*pts-5),'r');
 	plot(pts,2*x_l);
 	hold off;
-	fprintf("\n------- test_sinc_trivial--------\nUser Input required:\n\n");
+	fprintf("\n------- test_sinc_gauss10--------\nUser Input required:\n\n");
 	ans = input('Do the two graphs (more or less) coincide? Type Y for YES or N for NO ','s');
 	fprintf("\n");
 	if (ans(1) == 'y' || ans(1) == 'Y')
@@ -63,4 +66,25 @@ function [status, msg] = test_sinc_gauss_10()
 		status = 1;
 		msg = 'FAIL';
 	end;
+end
+
+function [status, msg] = test_lowpass_sine()
+	%A low frequency sinusoid should pass through the filter without any change
+	t = (0:0.01:1)';
+	x = sin(2*pi*t);
+	x_l = lpf_quad(x, t, 4*pi); %cutoff is double the sinusoid freq
+	[status, msg] = assert_eq(x,x_l,0.001); %Graphs are within 0.1%
+end
+
+function [status, msg] = test_lowpass_cosine()
+	%This test is essentially same as above, but with a cosine instead
+	%of a sine
+	%This is done to ensure that the filter handles real and imaginary
+	%parts correctly in its internal processing (sine has imaginary dft,
+	%cosine has real dft)
+	
+	t = (0:0.01:1)';
+	x = cos(2*pi*t);
+	x_l = lpf_quad(x, t, 4*pi); %cutoff is double the sinusoid freq
+	[status, msg] = assert_eq(x,x_l,0.001); %Graphs are within 0.1%
 end
