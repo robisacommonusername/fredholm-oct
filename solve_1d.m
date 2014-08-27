@@ -40,30 +40,19 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 		opts.n = quad_points_needed(opts.quad_method,max_sample_period);
 	end;
 	
-	%Calculate quadrature points and weights
-	[pts, weights] = generate_quadrature(opts.quad_method, opts.n);
+	%Options to pass to the fastcall function.
+	fast_opts = fastcall_opts('quad_method', opts.quad_method,'n',opts.n,'low',0);
 	
-	%determine transformations to remap variable into [0,1]x[0,1]
-	[kbar,k, zbar, z, deriv] = warp_variables(kmin,kmax,zf);
-	kbari = kbar(ki);
+	%Calculate discretised operator, quad points, etc
+	[Kd,Kdag,pts,kfunc,zfunc,deriv] = f(A,ki,zf,fast_opts);
+	%resample S if required
+	Sbar = discretise_function(S, kfunc(pts), ki);
 	
-	%resample S and A at the appropriate sampling points (Not required if
-	% 'quad_method' is 'trivial', 'simpson' or other Newton-Cotes rule)
-	Sbar = discretise_function(S, pts, kbari);
-	Abar = discretise_function(A, pts, kbari);
+	%Construct low order discretisation
+	[Kd_low, Kdag_low, pts_low, kfunc_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
+	Sbar_low = discretise_function(Sbar, kfunc_low(pts_low), ki);
 	
-	%construct discretised operator and its adjoint
-	fast_opts = fastcall_opts('quad_method', opts.quad_method,'n',opts.n);
-	[Kd, Kdag] = f(Abar,kmin,kmax,zf,0,fast_opts);
-	
-	%Construct low order discretisation of K
-	[pts_low,weights_low] = generate_quadrature(fast_opts.quad_method_low,fast_opts.n_low);
-	Sbar_low = discretise_function(S, pts_low, kbari);
-	Abar_low = discretise_function(A, pts_low, kbari);
-	[Kd_low, Kdag_low] = f(Abar_low,kmin,kmax,zf,1);
-	
-	%Compute regularisation parameter
-	normK = operator_norm(Kd,Kdag,weights);
+	%Compute regularisation parameter using low order discretisation
 	%if we're using lcurve_lpf, compute diffraction limit and cutoff
 	reg_opts = opts.reg_opts;
 	if strcmp(opts.reg_method,'lcurve_lpf')
@@ -76,6 +65,7 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 	eps = regularise2(Kd_low, Kdag_low, Sbar_low, opts.reg_method, reg_opts);
 	
 	%solve equations
+	normK = operator_norm(Kd,Kdag,weights);
 	x0 = opts.mean_chi*ones(length(Sbar),1);
 	switch (opts.solver)
 		case 'richardson_lpf'
@@ -110,6 +100,6 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 	
 	
 	%unwarp z axis
-	z_pts = z(pts);
+	z_pts = zfunc(pts);
 	
 end
