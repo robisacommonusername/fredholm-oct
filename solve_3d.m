@@ -1,25 +1,25 @@
 %Solve a 3D OCT problem, including the Fourier transforms
 %
 %Usage:
-%[chi, rx, ry, rz, error] = solve_3d(S, S_xi, S_yi, S_ki, f, A, A_ki,...
-%	zf, varargin)
+%[chi, rx, ry, rz, error] = solve_3d(f, S, S_xi, S_yi, ki, A, zf, varargin)
 %
 %Input Parameters
-%	S: recorded interferometric data, S(x,y,k) in rank three tensor. 
-%	Major dimension is x, then y to aid fft performance. k is stored in
-%	dimension with largest stride
-%	
-%	S_xi, S_yi, S_ki: Sampling points of S. S_xi and S_yi must contain
-%	uniformally spaced sampling points, S_ki need not
-%
 %	f: Fastcall kernel. f should be a function handle that
 %	accepts arguments Qx, Qy, and returns a 1D fastcall kernel generator
 %	For example, use 
 %		f = @(Qx,Qy) fastcall_gauss_kernel(sqrt(Qx^2+Qy^2),alpha,z0);
 %	 to set alpha and z0 on gaussian beam
 %
-%	A: Source spectrum envelope
-%	A_ki: Sampling points in k domain of spectrum
+%	S: recorded interferometric data, S(x,y,k) in rank three tensor. 
+%	Major dimension is x, then y to aid fft performance. k is stored in
+%	dimension with largest stride
+%	
+%	S_xi, S_yi: Spatial sampling points of S. S_xi and S_yi must contain
+%	uniformally spaced sampling points
+%
+%	ki: sampling points in k domain of both S and A
+%
+%	A: Source spectrum envelope. Must be specified at the ki points
 %
 %	zf: scatterer thickness along z-axis
 %
@@ -40,14 +40,14 @@
 %	error: not currently defined or used
 
 
-function [chi, rx, ry, rz, error] = solve_3d(S, S_xi, S_yi, S_ki, f, A, A_ki, zf, varargin)
+function [chi, rx, ry, rz, error] = solve_3d(f, S, S_xi, S_yi, ki, A, zf, varargin)
 	%get additional options for the 1d solver
-	if nargin > 8
+	if nargin > 7
 		do_fft = varargin{1};
 	else
 		do_fft = 1;
 	end;
-	if nargin > 9
+	if nargin > 8
 		opts_1d = varargin{2};
 	else
 		opts_1d = solve_1d_opts(); %use defaults
@@ -87,8 +87,8 @@ function [chi, rx, ry, rz, error] = solve_3d(S, S_xi, S_yi, S_ki, f, A, A_ki, zf
 	for ix = 1:ix_max
 		for iy = 1:iy_max
 			f1d = f(Qx(ix), Qy(iy));
-			[chiz, z_pts, error] = solve_1d(f1d, Stilde(:,ix,iy), S_ki,...
-				A, A_ki, zf, opts_1d );
+			[chiz, z_pts, error] = solve_1d(f1d, Stilde(:,ix,iy), A,...
+				ki, zf, opts_1d );
 			Stilde(ix,iy,:) = chiz; %reuse memory
 		end;
 	end;
