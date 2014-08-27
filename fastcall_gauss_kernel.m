@@ -10,17 +10,25 @@ function f = fastcall_gauss_kernel(Q,alpha,z0,varargin)
 		opts = fastcall_opts();
 	end;
 	
-	f = @(Abar,ka,kb,zf,low) fastcall_gauss_worker(Abar,ka,kb,zf,Q,alpha,z0,low,opts);
+	f = @(A,ki,zf,low) fastcall_gauss_worker(A,ki,zf,Q,alpha,z0,low,opts);
 end
 
 %This is the fastcall function, and it should be implemented in C
-function [Kd,Kdag,pts,k,z,deriv] = fastcall_gauss_worker(Abar,ka,kb,zf,Q,alpha,z0,low,opts)
+function [Kd,Kdag,pts,k,z,deriv] = fastcall_gauss_worker(A,ki,zf,Q,alpha,z0,low,opts)
 	if low
 		quad_method = opts.quad_method_low;
 		n = opts.n_low;
 	else
 		quad_method = opts.quad_method;
 		n = opts.n;
+	end;
+	
+	ka = ki(1);
+	kb = ki(end);
+	if ka > kb
+		ki = sort(ki);
+		ka = ki(1);
+		kb = ki(end);
 	end;
 	
 	%model implementation
@@ -31,6 +39,9 @@ function [Kd,Kdag,pts,k,z,deriv] = fastcall_gauss_worker(Abar,ka,kb,zf,Q,alpha,z
 	[kbar,k,zbar,z,deriv] = warp_variables(ka,kb,zf, opts.warp_method);
 	
 	[pts, weights] = generate_quadrature(quad_method, n);
+	
+	%resample A at the quadrature points.
+	Abar = discretise_function(A, pts, ki);
 	
 	%This step is very slow (it was what we were trying to avoid by creating
 	%the fastcall interface), so rewrite it.
