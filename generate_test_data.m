@@ -7,31 +7,33 @@
 %k_i: sampling points in k domain
 %
 %inputs
-%n: number of points to use
-%chi: function handle describing variation of chi sown the z axis
+%psi: function handle describing non-dimensionalised susceptibility on [0,1]
 %f: fastcall kernel function
 %A: spectrum envelope, sampled in k domain
-%A_ki: sampling points in k domain
-%alpha: warping parameter
-%snr_db: signal to noise ratio in db
+%ki: sampling points in k domain
+%zf: sample thickness
+%noise_ratio: noise power/signal power. Specify this way to allow noise to
+%	be set to 0. The snr in db is 10 log10(noise_ratio)
 %
 %use simpson quadrature, as this gives us equally spaced sampling points (more realistic)
 
-function [Sexp, k_i] = generate_test_data(chi, f, fast A, A_ki, alpha, snr_db)
-	[pts, weights] = generate_quadrature('simpson',n);
-	%use linear remapping
-	chibar = chi(alpha*pts);
-	k_min = A_ki(1);
-	k_max = A_ki(end);
+function [Sexp, ki] = generate_test_data(chi, f, A, ki, zf, noise_ratio, opts)
+
+	fast_opts = fastcall_opts('n',opts.n,'quad_method',opts.quad_method);
+	[Kd,Kdag,pts,kfunc,zfunc,deriv] = f(A,ki,zf,fast_opts);
+	ki = kfunc(pts);
+	psi = arrayfun(chi,zfunc(pts));
 	
-	[Hbar, kbar, z] = warp_variables(H, k_min, k_max, alpha);
-	Abar = discretise_function(A, pts, kbar(A_ki));
-	[Kd,Kdag] = discretise_operator(Hbar, pts, weights, Abar);
-	
-	Sbar = Kd*chibar;
-	k_i = k_min+pts*(k_max-k_min);
+	sigma = Kd*psi;
+	kmin = min(ki);
+	kmax = max(ki);
 	
 	%add white noise
-	energy = 10*log10((k_max-k_min)* weights' * abs(Sbar).^2);
-	Sexp = awgn(Sbar, snr_db, energy);
+	if noise_ratio
+		snr_db = -10*log10(noise_ratio);
+		energy = 10*log10((1/(kmax-kmin))*weights' * abs(sigma).^2);
+		Sexp = awgn(sigma, snr_db, energy);
+	else
+		Sexp = sigma;
+	end;
 end
