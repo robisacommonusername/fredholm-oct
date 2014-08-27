@@ -28,6 +28,7 @@ function psi_l = lpf_quad(psi, pts, wc)
 		%Ensure to reconstruct with frequencies in [-Fs,Fs], not [0,2Fs]
 		%READ:
 		%https://en.wikipedia.org/wiki/Discrete_Fourier_transform#Trigonometric_interpolation_polynomial
+		psi_l_old = psi_l;
 		if (mod(N,2) == 0)
 			%even length sequence - need to handle F=0.5 separately
 			k = [0:(N/2-1), 0, (-1*(N/2-1)):-1];
@@ -45,9 +46,11 @@ function psi_l = lpf_quad(psi, pts, wc)
 			psi_l = psi_l + 1/N*(exp(2*pi*i*kk.*t)*transpose(X));
 		end;
 		%keyboard();
-		%calculate error
+		%Compute correction term for next iteration
 		delta_psi = psi - psi_l;
-		err = trapz(pts,abs(delta_psi));
+		
+		%Are the iterates converging to the lowpass solution?
+		err = trapz(pts,abs(psi_l - psi_l_old)); 
 		iters = iters+1;
 	end;
 	if (iters == max_iters)
