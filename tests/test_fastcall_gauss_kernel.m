@@ -22,9 +22,13 @@ function [status,msg] = test_fastcall_kernel_trivial()
 	zf = 3;
 	f = fastcall_gauss_kernel(Q,alpha,z0);
 	A = ones(npoints,1);
-	[Kd,Kdag,pts,k,z,der] = f(A,ki,zf,fastcall_opts('n',npoints,'quad_method','trivial'));
-	k_i = k(pts);
-	z_i = z(pts);
+	fast_opts = fastcall_opts('n',npoints,'quad_method','trivial');
+	[Kd,Kdag,pts,weights] = f(A,ki,zf,fast_opts);
+	k_i = unwarp_data('linear',pts,ka,kb);
+	z_i = unwarp_data(fast_opts.warp_method,pts,zf);
+	der = @(zeta) warp_derivative(fast_opts.warp_method,zeta,zf);
+	%k_i = k(pts);
+	%z_i = z(pts);
 	[zz,kk] = meshgrid(z_i,k_i);
 	H = gauss_kernel(Q,alpha,z0);
 	
