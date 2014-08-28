@@ -20,9 +20,9 @@
 function [Sexp, ki] = generate_test_data(chi, f, A, ki, zf, noise_ratio, opts)
 
 	fast_opts = fastcall_opts('n',opts.n,'quad_method',opts.quad_method);
-	[Kd,Kdag,pts,kfunc,zfunc,deriv] = f(A,ki,zf,fast_opts);
-	ki = kfunc(pts);
-	psi = arrayfun(chi,zfunc(pts));
+	[Kd,Kdag,pts,weights] = f(A,ki,zf,fast_opts);
+
+	psi = arrayfun(chi,unwarp_data(fast_opts.warp_method, pts, zf));
 	
 	sigma = Kd*psi;
 	kmin = min(ki);

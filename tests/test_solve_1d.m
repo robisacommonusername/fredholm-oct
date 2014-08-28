@@ -17,37 +17,32 @@ function [status, msg] = small_test_q0_gaussianbeam_10db()
 	kmax = 3;
 	alpha = 0.2;
 	fwhm = 2*sqrt(3)*alpha^2/(kmin+kmax)*2;
+	Q = 0;
+	z0 = fwhm/2;
+	zf = fwhm;
+	npoints = 300;
+	ki = kmin:((kmax-kmin)/(npoints-1)):kmax;
+	A = ones(npoints,1);
+	A = A/norm(A);
+	noise_ratio = 0.1; %10dB SNR
+	solver_opts = solve_1d_opts('mean_chi',0.8125,'n',npoints);
 	
 	%thin object, one fwhm in width. refractive index varies between
 	%n=1.4 => chi = 0.96, and n=1.3 => chi = 0.69
 	chi = @(z) 0.135*(cos(2*pi*z/fwhm)+6.111).*heaviside(fwhm-z).*heaviside(z);
-	z = -1*fwhm:(fwhm/300):2*fwhm;
-	
-	%GENERATE DATA
-	%gauss kernel Q=0, with thin object. Focal plane at z=half power point
-	f = fastcall_gauss_kernel(0,alpha,fwhm/2,fastcall_opts('n',301,'quad_method','simpson'));
-	
-	%flat spectrum, unit power
-	A = ones(1,301);
-	A = A/norm(A); %normalise
-	
-	zf = fwhm;
-	[Kd,Kdag,pts,kfunc,zfunc,der] = f(A,kmin,kmax,zf,0);
-	Sexp = Kd*arrayfun(chi,pts);
-	ki = kfunc(pts);
 	
 	
-	%ATTEMPT RECOVERY
-	f2 = fastcall_gauss_kernel(0,alpha,fwhm/2,fastcall_opts('n',300,'quad_method','gauss10'));
-	[chi_exp,z_exp] = solve_1d(f2, Sexp, A, ki, fwhm,...
-		solve_1d_opts('mean_chi',0.8125,'n',300));
-		
-	%Plot true solution and recovered solution
-	hold on;
-	plot(z_exp,chi_exp);
-	plot(z,arrayfun(chi,z),'r');
-	hold off;
+	f = fastcall_gauss_kernel(Q,alpha,z0);
+	generate_and_solve(chi,f,A,ki,zf,noise_ratio,solver_opts);
 	
-	status=0;
-	msg = 'pass';
+	fprintf("\n------- small_test_q0_gaussianbeam_10db--------\nUser Input required:\n\n");
+	ans = input('Do the two graphs (more or less) coincide? Type Y for YES or N for NO ','s');
+	fprintf("\n");
+	if (ans(1) == 'y' || ans(1) == 'Y')
+		status = 0;
+		msg = 'PASS';
+	else
+		status = 1;
+		msg = 'FAIL';
+	end;
 end

@@ -49,7 +49,7 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 	
 	%Construct low order discretisation
 	[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
-	sigma_low = resample_vector(S, ki, pts_low)
+	sigma_low = resample_vector(S, ki, pts_low);
 	
 	%Compute regularisation parameter using low order discretisation
 	%if we're using lcurve_lpf, compute diffraction limit and cutoff
