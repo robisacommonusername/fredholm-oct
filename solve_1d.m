@@ -44,13 +44,12 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 	fast_opts = fastcall_opts('quad_method', opts.quad_method,'n',opts.n,'low',0);
 	
 	%Calculate discretised operator, quad points, etc
-	[Kd,Kdag,pts,kfunc,zfunc,deriv] = f(A,ki,zf,fast_opts);
-	%resample S if required
-	Sbar = discretise_function(S, kfunc(pts), ki);
+	[Kd,Kdag,pts,weights] = f(A,ki,zf,fast_opts);
+	sigma = resample_vector(S, ki, pts);
 	
 	%Construct low order discretisation
-	[Kd_low, Kdag_low, pts_low, kfunc_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
-	Sbar_low = discretise_function(Sbar, kfunc_low(pts_low), ki);
+	[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
+	sigma_low = resample_vector(S, ki, pts_low)
 	
 	%Compute regularisation parameter using low order discretisation
 	%if we're using lcurve_lpf, compute diffraction limit and cutoff
@@ -62,18 +61,18 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 		Wc = wc/fs;
 		reg_opts = setfield(reg_opts,'Wc',Wc);
 	end;
-	eps = regularise2(Kd_low, Kdag_low, Sbar_low, opts.reg_method, reg_opts);
+	eps = regularise2(Kd_low, Kdag_low, sigma_low, opts.reg_method, reg_opts);
 	
 	%solve equations
 	normK = operator_norm(Kd,Kdag,weights);
-	x0 = opts.mean_chi*ones(length(Sbar),1);
+	x0 = opts.mean_chi*ones(length(sigma),1);
 	switch (opts.solver)
 		case 'richardson_lpf'
-			[chi, error, iters] = solve_iteratively_lpf(Kd, Kdag, Sbar, eps, pts, weights, 2*kmax*zf,...
+			[chi, error, iters] = solve_iteratively_lpf(Kd, Kdag, sigma, eps, pts, weights, 2*kmax*zf,...
 			solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
 				'max_iters',opts.max_iters));
 		case 'richardson'
-			[chi, error, iters] = solve_iteratively(Kd, Kdag, Sbar, eps, weights,...
+			[chi, error, iters] = solve_iteratively(Kd, Kdag, sigma, eps, weights,...
 			solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
 				'max_iters',opts.max_iters));
 		otherwise
@@ -90,8 +89,8 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 			%solvers which are N^2. There is also a loss of precision from doing
 			%this explicitly
 			
-			%solve Kdag*Sbar = eps(x-x0) + Kdag*K*x
-			b = Kdag*Sbar + eps*x0;
+			%solve Kdag*sigma = eps(x-x0) + Kdag*K*x
+			b = Kdag*sigma + eps*x0;
 			A = eps*eye(opts.n) + Kdag*Kd;
 			error = 0;
 			iters = 1;
@@ -100,6 +99,6 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 	
 	
 	%unwarp z axis
-	z_pts = zfunc(pts);
+	z_pts = unwarp_data(fast_opts.warp_method, pts, zf);
 	
 end
