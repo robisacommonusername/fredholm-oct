@@ -1,8 +1,8 @@
 %Determine how many quad points are needed in interval [0,1] so that no
-%two quadrature points are more than dmax apart
+%two quadrature points are more than d_max apart
 %method is a string specifying the quadrature method
 
-function n = quad_points_needed(method,dmax)
+function n = quad_points_needed(method,d_max)
 	switch(method)
 		case 'gauss10'
 		max_sep = 0.1488743390;
@@ -20,24 +20,24 @@ function n = quad_points_needed(method,dmax)
 		n = 10*num_intervals;
 		
 		case 'simpson'
-		n = ceil(1/dmax);
+		n = ceil(1/d_max)+1;
 		%ensure odd number of points
 		if (mod(n,2) == 0)
 			n = n+1;
 		end;
 		
 		case 'trvial'
-		n = ceil(1/dmax);
+		n = ceil(1/d_max);
 		
 		otherwise
 		disp('WARNING: Solving by bisection. This may be slow');
 		n_min = 888; %initialize, dummy value
 		n_max = 1;
 		%double n until we bracket the solution
-		sep = dmax+1; %dummy init value
+		sep = d_max+1; %dummy init value
 		iters = 0;
 		max_iters = 100;
-		while (sep > dmax && iters < max_iters)
+		while (sep > d_max && iters < max_iters)
 			n_min = n_max;
 			n_max = n_min*2;
 			[pts,weights] = generate_quadrature(method, n_max);
@@ -47,7 +47,7 @@ function n = quad_points_needed(method,dmax)
 		
 		%Now solve by bisection
 		dn = n_max-n_min;
-		while (dn > 0)
+		while (dn > 1)
 			mid = ceil((n_max+n_min)/2);
 			[pts,weights] = generate_quadrature(method, mid);
 			sep = max(diff([0;pts;1]));
@@ -58,7 +58,14 @@ function n = quad_points_needed(method,dmax)
 			end;
 			dn = n_max-n_min;
 		end;
-		
-		n = max([n_max,n_min]);
+		n1 = min([n_max,n_min]);
+		n2 = max([n_max,n_min]);
+		[pts_low, weights] = generate_quadrature(method,n1);
+		sep = max(diff([0;pts_low;1]));
+		if (sep < d_max)
+			n = n1;
+		else
+			n = n2;
+		end;
 	end;
 end
