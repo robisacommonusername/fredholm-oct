@@ -88,3 +88,72 @@ function [status, msg] = test_lowpass_cosine()
 	x_l = lpf_quad(x, t, 4*pi); %cutoff is double the sinusoid freq
 	[status, msg] = assert_eq(x,x_l,0.001); %Graphs are within 0.1%
 end
+
+function [status, msg] = test_dc_low_cutoff()
+	%In this test, we set wc small, but positive, such that Nc=0
+	%We make sure that a dc signal passes through this filter correctly
+	pts = generate_quadrature('gauss10',20);
+	psi = ones(20,1);
+	Ts = max(diff(pts));
+	N = length(0:Ts:1);
+	%we want Nc = floor(N*wc*Ts/2/pi) = 0 => 0 < wc < 2*pi/N/Ts
+	wc = pi/Ts/N;
+	psi_l = lpf_quad(psi, pts, wc);
+	[status, msg] = assert_eq(psi,psi_l);
+end
+
+function [status, msg] = test_nyquist_cutoff_even()
+	%Fc = 0.5 => Nc = floor(N/2) = N/2 when N even
+	N = 20;
+	Ts = 1/(N-1);
+	pts = (0:Ts:1)';
+	psi = exp((pts-0.5).^2); %something with all the frequencies
+	wc = pi/Ts;
+	psi_l = lpf_quad(psi, pts, wc);
+	[status,msg] = assert_eq(psi,psi_l);
+	
+end
+
+function [status, msg] = test_nyquist_cutoff_odd()
+	%Fc = 0.5 => Nc = floor(N/2) = (N-1)/2 when N odd
+	N = 20;
+	Ts = 1/(N-1);
+	pts = (0:Ts:1)';
+	psi = exp((pts-0.5).^2); %something with all the frequencies
+	wc = pi/Ts;
+	psi_l = lpf_quad(psi, pts, wc);
+	[status,msg] = assert_eq(psi,psi_l);
+end
+
+function [status, msg] = test_cutoff_nyquist_fs()
+	%Cutoff freq > nyquist freq, but < sampling freq
+	N = 20;
+	Ts = 1/(N-1);
+	pts = (0:Ts:1)';
+	psi = exp((pts-0.5).^2); %something with all the frequencies
+	wc = 1.5*pi/Ts;
+	psi_l = lpf_quad(psi, pts, wc);
+	[status,msg] = assert_eq(psi,psi_l);
+end
+
+function [status, msg] = test_cutoff_fs()
+	%Cutoff freq > sampling freq
+	N = 20;
+	Ts = 1/(N-1);
+	pts = (0:Ts:1)';
+	psi = exp((pts-0.5).^2); %something with all the frequencies
+	wc = 2*pi/Ts;
+	psi_l = lpf_quad(psi, pts, wc);
+	[status,msg] = assert_eq(psi,psi_l);
+end
+
+function [status, msg] = test_cutoff_greater_fs()
+	%Cutoff freq > sampling freq
+	N = 20;
+	Ts = 1/(N-1);
+	pts = (0:Ts:1)';
+	psi = exp((pts-0.5).^2); %something with all the frequencies
+	wc = 3*pi/Ts;
+	psi_l = lpf_quad(psi, pts, wc);
+	[status,msg] = assert_eq(psi,psi_l);
+end
