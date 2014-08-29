@@ -21,30 +21,20 @@ function psi_l = lpf_quad(psi, pts, wc)
 		X = fft(psi_interp); 
 		%filter data in freq domain - cutoff at wc
 		Nc = ceil(N*wc*Ts/2/pi); %todo - windowing, etc
-		X(Nc:end-Nc+1) = 0; %this will give us Gibbs?
-	
+		
 		%reconstruct at the quadrature points using trig interpolating
 		%polynomial. 
 		%Ensure to reconstruct with frequencies in [-Fs,Fs], not [0,2Fs]
 		%READ:
 		%https://en.wikipedia.org/wiki/Discrete_Fourier_transform#Trigonometric_interpolation_polynomial
+		%Note that we only take the frequencies in the band +-wc
+		Xf = [X(1:Nc-1), X(N-Nc+2:N)];
+		k = [0:(Nc-2), (1-Nc):-1];
+		[kk,t] = meshgrid(k,pts);
 		psi_l_old = psi_l;
-		if (mod(N,2) == 0)
-			%even length sequence - need to handle F=0.5 separately
-			k = [0:(N/2-1), 0, (-1*(N/2-1)):-1];
-			[kk,t] = meshgrid(k,pts);
-			nyquist_terms = X(N/2+1)*cos(N*pi*pts); %F=0.5. N/2+1 due to matlab 1 indexing
-			%We have to explicitly use transpose, not ', as ' will do a 
-			%complex transpose by default for a complex vector - not what
-			%we want. THIS was a very annoying bug to track down
-			psi_l = psi_l + 1/N*(exp(2*pi*i*kk.*t)*transpose(X)) + nyquist_terms;
-		else
-			%odd length sequence
-			k = [0:floor(N/2), (-1*floor(N/2)):-1];
-			[kk,t] = meshgrid(k,pts);
-			%As before, use transpose explicitly, don't do X'
-			psi_l = psi_l + 1/N*(exp(2*pi*i*kk.*t)*transpose(X));
-		end;
+		psi_l = psi_l + 1/N*(exp(2*pi*i*kk.*t)*transpose(Xf));
+		
+		
 		%keyboard();
 		%Compute correction term for next iteration
 		delta_psi = psi - psi_l;
