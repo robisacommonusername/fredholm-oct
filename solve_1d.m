@@ -76,7 +76,7 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 			solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
 				'max_iters',opts.max_iters));
 		otherwise
-			disp('WARNING: Unrecognised solver specified. Falling back to QR');
+			warning('Unrecognised solver specified. Falling back to QR');
 			%Fallback/reference solver. This actually works ok on Octave,
 			%because octave automatically finds least squares solutions
 			%for ill-conditioned linear systems. On Matlab, it will

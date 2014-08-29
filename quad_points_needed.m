@@ -30,7 +30,7 @@ function n = quad_points_needed(method,d_max)
 		n = ceil(1/d_max);
 		
 		otherwise
-		disp('WARNING: Solving by bisection. This may be slow');
+		warning('Solving by bisection. This may be slow');
 		n_min = 888; %initialize, dummy value
 		n_max = 1;
 		%double n until we bracket the solution

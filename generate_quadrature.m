@@ -16,7 +16,7 @@ function [pts, weights] = generate_quadrature(method, n)
 		%classic gauss-legendre 10 point quadrature. Subdivide interval as necessary
 		num_intervals = ceil(n/10);
 		if (mod(n,10) ~= 0)
-			disp('WARNING: order (n) should be a multiple of 10 when using Gauss 10 point quadrature');
+			warning('order (n) should be a multiple of 10 when using Gauss 10 point quadrature');
 		end;
 		
 		interval_width = 1.0/num_intervals;
@@ -72,7 +72,7 @@ function [pts, weights] = generate_quadrature(method, n)
 		%because of shared end points, n = 2*num_intervals+1
 		num_intervals = ceil((n-1)/2);
 		if mod(n,2) ~= 1
-			disp('WARNING: n should be odd for use with Simpsons rule');
+			warning('n should be odd for use with Simpsons rule');
 		end;
 		
 		interval_width = 1.0/num_intervals;
@@ -88,7 +88,7 @@ function [pts, weights] = generate_quadrature(method, n)
 		pts = (step/2:step:1-step/2)';
 		
 		otherwise
-		disp('WARNING: unknown quadrature method. Falling back to trivial method');
+		warning('unknown quadrature method. Falling back to trivial method');
 		[pts, weights] = generate_quadrature('trivial', n);
 		
 		

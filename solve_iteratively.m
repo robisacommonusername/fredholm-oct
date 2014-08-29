@@ -44,7 +44,7 @@ function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, eps, weights,
 	chi = x0 + deltax;
 	
 	if iterations == opts.max_iters
-		disp('WARNING: solve_iteratively returned after maximum number of iterations was exceeded');
+		warning('solve_iteratively returned after maximum number of iterations was exceeded');
 	end;
 	
 	error = error/error_multiplier;

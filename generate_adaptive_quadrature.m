@@ -56,7 +56,7 @@ function [pts, weights] = generate_adaptive_quadrature(f, method, tol0, pts_per_
 		pts = pts_weights_sorted(:,1);
 		weights = pts_weights_sorted(:,2);
 	else
-		disp('WARNING: integral did not converge, falling back to non-adaptive quadrature');
+		warning('integral did not converge, falling back to non-adaptive quadrature');
 		[pts,weights] = generate_quadrature(method,pts_per_interval*max_intervals);
 	end;
 end

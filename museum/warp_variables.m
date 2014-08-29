@@ -44,7 +44,7 @@ function [kbar_of_k, k_of_kbar, zbar_of_z, z_of_zbar, dz_dzbar] = ...
 		dz_dzbar = @(zbar) zf;
 		
 		otherwise
-		disp('WARNING: unrecognised variable warping method. Falling back to linear');
+		warning('unrecognised variable warping method. Falling back to linear');
 		z_of_zbar =  @(zbar) zbar*zf;
 		zbar_of_z = @(z) z/zf;
 		dz_dzbar = @(zbar) zf;
