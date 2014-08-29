@@ -51,7 +51,7 @@ function n = quad_points_needed(method,d_max)
 			mid = ceil((n_max+n_min)/2);
 			[pts,weights] = generate_quadrature(method, mid);
 			sep = max(diff([0;pts;1]));
-			if (sep < d_max)
+			if (sep <= d_max)
 				n_max = mid;
 			else
 				n_min = mid;

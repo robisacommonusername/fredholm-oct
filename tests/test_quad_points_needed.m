@@ -19,7 +19,14 @@ function [status, msg] = test_gauss10()
 	dmax = (dm1+dm2)/2;
 	n = quad_points_needed('gauss10',dmax);
 	[status, msg] = assert_eq(n,120);
-	
+end
+
+function test_gauss10_exact()
+	%marginal case - dmax is exactly equal to the separation for n=120
+	[pts1, weights] = generate_quadrature('gauss10', 120);
+	dm1 = max(diff([0;pts1;1]));
+	n = quad_points_needed('gauss10',dm1);
+	[status, msg] = assert_eq(n,120);
 end
 
 function [status, msg] = test_gaussn_odd()
@@ -32,6 +39,14 @@ function [status, msg] = test_gaussn_odd()
 	[status, msg] = assert_eq(n,17);
 end
 
+function [status, msg] = test_gaussn_odd_exact()
+	%marginal case
+	[pts1, weights] = generate_quadrature('gaussn', 17);
+	dm1 = max(diff([0;pts1;1]));
+	n = quad_points_needed('gaussn',dm1);
+	[status, msg] = assert_eq(n,17);
+end
+
 function [status, msg] = test_gaussn_even()
 	[pts1, weights] = generate_quadrature('gaussn', 18);
 	dm1 = max(diff([0;pts1;1]));
@@ -39,6 +54,14 @@ function [status, msg] = test_gaussn_even()
 	dm2 = max(diff([0;pts2;1]));
 	dmax = (dm1+dm2)/2;
 	n = quad_points_needed('gaussn',dmax);
+	[status, msg] = assert_eq(n,18);
+end
+
+function [status, msg] = test_gaussn_even_exact()
+	%marginal case
+	[pts1, weights] = generate_quadrature('gaussn', 18);
+	dm1 = max(diff([0;pts1;1]));
+	n = quad_points_needed('gaussn',dm1);
 	[status, msg] = assert_eq(n,18);
 end
 
@@ -64,7 +87,14 @@ function [status, msg] = test_simpson_mod1()
 	dm2 = max(diff([0;pts2;1]));
 	dmax = (dm1+dm2)/2;
 	n = quad_points_needed('simpson',dmax);
-	%keyboard();
+	[status, msg] = assert_eq(n,121);
+end
+
+function [status, msg] = test_simpson_mod1_exact()
+	%marginal case
+	[pts1, weights] = generate_quadrature('simpson', 121);
+	dm1 = max(diff([0;pts1;1]));
+	n = quad_points_needed('simpson',dm1);
 	[status, msg] = assert_eq(n,121);
 end
 
@@ -75,6 +105,13 @@ function [status, msg] = test_simpson_mod3()
 	dm2 = max(diff([0;pts2;1]));
 	dmax = (dm1+dm2)/2;
 	n = quad_points_needed('simpson',dmax);
-	%keyboard();
+	[status, msg] = assert_eq(n,123);
+end
+
+function [status, msg] = test_simpson_mod3_exact()
+	%marginal case
+	[pts1, weights] = generate_quadrature('simpson', 123);
+	dm1 = max(diff([0;pts1;1]));
+	n = quad_points_needed('simpson',dm1);
 	[status, msg] = assert_eq(n,123);
 end
