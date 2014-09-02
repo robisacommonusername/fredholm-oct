@@ -1,5 +1,5 @@
 %A function for 2D numerical integration over a rectangular region,
-%based on an adaptive Gauss-Legendre 10 point quadrature. Very similar
+%based on an adaptive Gauss-Kronrod (G7-K15) point quadrature. Very similar
 %to built in function dblquad, but without the restrictions: can be
 %be called recursively, can integrate complex functions, and can be
 % called on non-vectorised functions.
@@ -20,14 +20,14 @@
 %	ya, yb: lower and upper limits of integration in y dimension
 %varargin
 % 	tol: absolute tolerance, default = 4 decimal places. Can pass 0 to use default value
-% 	max_iters: maximum recursion depth, default is 100. Cannot be greater
+% 	max_iters: maximum recursion depth, default is 10. Cannot be greater
 %		than 255, due to limitations of octave interpreter stack
 %
 %See also: dblquad
 %
 function [I,status] = dbl_integrate_adaptive(f,xa,xb,ya,yb, varargin)
 	tol = 0.0001; %absolute tolerance
-	max_iters = 100; %maximum recursion depth
+	max_iters = 10; %maximum recursion depth
 	if nargin > 5
 		if varargin{1} > 0
 			tol = varargin{1};
@@ -41,20 +41,12 @@ function [I,status] = dbl_integrate_adaptive(f,xa,xb,ya,yb, varargin)
 		end;
 	end;
 	
-	I=0;
-	I1 = dbl_integrate(f,xa,xb,ya,yb);
-	if max_iters > 1
-		mx = (xa+xb)/2;
-		my = (ya+yb)/2;
-		I2 = dbl_integrate(f,xa,mx,ya,my)+...
-			dbl_integrate(f,mx,xb,ya,my) +...
-			dbl_integrate(f,xa,mx,my,yb) +...
-			dbl_integrate(f,mx,xb,my,yb);
-		%Todo: reuse these values in child calls to prevent double calculation
-		if abs(I1-I2) < tol || abs(I2) < tol
-			I = I2;
-			status = 0;
-		else
+	[I,err] = dbl_integrate(f,xa,xb,ya,yb);
+	status = 0;
+	if (max_iters > 1)
+		if (err > tol)
+			mx = (xa+xb)/2;
+			my = (ya+yb)/2;
 			[I1,stat1] = dbl_integrate_adaptive(f,xa,mx,ya,my,tol/4,max_iters-1);
 			[I2,stat2] = dbl_integrate_adaptive(f,mx,xb,ya,my,tol/4,max_iters-1);
 			[I3,stat3] = dbl_integrate_adaptive(f,xa,mx,my,yb,tol/4,max_iters-1);
@@ -64,7 +56,6 @@ function [I,status] = dbl_integrate_adaptive(f,xa,xb,ya,yb, varargin)
 		end;
 	else
 		%recursion limit reached
-		I = I1;
 		status = 1;
 	end;
 end;
