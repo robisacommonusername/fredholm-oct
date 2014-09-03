@@ -92,9 +92,9 @@ function [status, msg] = test_projected_solution()
 	plot(t,sinc(0.5*t),'r');
 	plot(t,2*x_l);
 	hold off;
-	fprintf("\n------- test_projected_solution--------\nUser Input required:\n\n");
+	fprintf('\n------- test_projected_solution--------\nUser Input required:\n\n');
 	ans = input('Do the two graphs (more or less) coincide? Type Y for YES or N for NO ','s');
-	fprintf("\n");
+	fprintf('\n');
 	if (ans(1) == 'y' || ans(1) == 'Y')
 		status = 0;
 		msg = 'PASS';

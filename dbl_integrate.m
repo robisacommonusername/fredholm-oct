@@ -68,4 +68,4 @@ function [I,err_est] = dbl_integrate(f,xa,xb,ya,yb)
 	
 	I = K15;
 	err_est = abs(K15-G7); %Todo - improve this
-end;
+end

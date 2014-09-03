@@ -58,4 +58,4 @@ function [I,status] = dbl_integrate_adaptive(f,xa,xb,ya,yb, varargin)
 		%recursion limit reached
 		status = 1;
 	end;
-end;
+end

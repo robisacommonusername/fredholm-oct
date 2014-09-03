@@ -35,9 +35,9 @@ function [status, msg] = small_test_q0_gaussianbeam_10db()
 	f = fastcall_gauss_kernel(Q,alpha,z0);
 	generate_and_solve(chi,f,A,ki,zf,noise_ratio,solver_opts);
 	
-	fprintf("\n------- small_test_q0_gaussianbeam_10db--------\nUser Input required:\n\n");
+	fprintf('\n------- small_test_q0_gaussianbeam_10db--------\nUser Input required:\n\n');
 	ans = input('Do the two graphs (more or less) coincide? Type Y for YES or N for NO ','s');
-	fprintf("\n");
+	fprintf('\n');
 	if (ans(1) == 'y' || ans(1) == 'Y')
 		status = 0;
 		msg = 'PASS';

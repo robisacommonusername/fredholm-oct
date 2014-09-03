@@ -28,9 +28,9 @@ function [status, msg] = test_sinc_trivial()
 	plot(t,sinc(0.5*t),'r');
 	plot(t,2*x_l);
 	hold off;
-	fprintf("\n------- test_sinc_trivial--------\nUser Input required:\n\n");
+	fprintf('\n------- test_sinc_trivial--------\nUser Input required:\n\n');
 	ans = input('Do the two graphs (more or less) coincide? Type Y for YES or N for NO ','s');
-	fprintf("\n");
+	fprintf('\n');
 	if (ans(1) == 'y' || ans(1) == 'Y')
 		status = 0;
 		msg = 'PASS';
@@ -56,9 +56,9 @@ function [status, msg] = test_sinc_gauss10()
 	plot(pts,sinc(10*pts-5),'r');
 	plot(pts,2*x_l);
 	hold off;
-	fprintf("\n------- test_sinc_gauss10--------\nUser Input required:\n\n");
+	fprintf('\n------- test_sinc_gauss10--------\nUser Input required:\n\n');
 	ans = input('Do the two graphs (more or less) coincide? Type Y for YES or N for NO ','s');
-	fprintf("\n");
+	fprintf('\n');
 	if (ans(1) == 'y' || ans(1) == 'Y')
 		status = 0;
 		msg = 'PASS';

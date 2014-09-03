@@ -18,7 +18,7 @@ function [status, msg] = integrate_lorentzian()
 	H = @(k,z) k./(1+z.^2);
 	[kbar, k, zbar, z, deriv] = warp_variables(0, 1, 1, 'atan');
 	k0 = 2;
-	int = quad(@(zz) H(k(k0),z(zz))*deriv(zz), 0, 1);
+	int = quad(@(zz) H(k(k0),z(zz)).*deriv(zz), 0, 1);
 	[status, msg] = assert_eq(int, pi);
 end
 
@@ -26,7 +26,7 @@ function [status, msg] = integrate_lorentzian_cutoff_lin_rescale()
 	H = @(k,z) k./(1+z.^2);
 	[kbar, k, zbar, z, deriv] = warp_variables(0, 1, 2000, 'linear');
 	k0 = 2;
-	int = quad(@(zz) H(k(k0),z(zz))*deriv(zz), 0, 1);
+	int = quad(@(zz) H(k(k0),z(zz)).*deriv(zz), 0, 1);
 	[status, msg] = assert_eq(int, pi, 0.01); %cutoff is not an accurate method
 end
 

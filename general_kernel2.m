@@ -5,7 +5,7 @@
 function H = general_kernel2(g0,Q,z0)
 	s = @(QQ,rho,t,k) QQ-k*rho*[cos(t),sin(t)]; %Helper function, Q-q
 	H = @(k,z) integrate_kernel_custom(...
-		@(rho,t) k*rho*exp(i*k*(z-z0)*sqrt(1-rho^2))*g0(k*rho*[cos(t),sin(t)],k)*exp(i*k*(z-z0)*sqrt(1-norm(s(Q,rho,t,k))^2))*g0(s(Q,rho,t,k),k),1,0,2*pi,0.0001,10);
+		@(rho,t) k*rho*exp(i*k*(z-z0)*sqrt(1-rho^2))*g0(k*rho*[cos(t),sin(t)],k)*exp(i*k*(z-z0)*sqrt(1-norm(s(Q,rho,t,k))^2))*g0(s(Q,rho,t,k),k),1,0,2*pi,0.0001,3);
 end
 
 %Below is a custom adaptive quadrature method, for integrating a function
@@ -71,7 +71,7 @@ function [I, status] = integrate_kernel_custom(f,r,ta,tb,varargin)
 		I = I1;
 		status = 1;
 	end;
-end;
+end
 
 %Non adaptive Gauss-Chebyshev/Gauss-Legendre integrator.
 %See integrate_kernel_custom above and implementation notes.
@@ -88,4 +88,4 @@ function I = integrate_chebyshev(f,r,ta,tb,n)
 	
 	[rho,theta] = meshgrid(pts_r,pts_t);
 	I = weights_t'*arrayfun(f,rho,theta)*weights_r;
-end;
+end
