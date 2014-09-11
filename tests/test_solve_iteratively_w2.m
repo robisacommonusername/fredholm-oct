@@ -74,7 +74,7 @@ function [status, msg] = test_projected_solution()
 	eps = 100*N;
 	y = K*x;
 	wc = 10*pi;
-	x_l = solve_iteratively_lpf(K, Kdag, y, eps, tbar, weights, wc);
+	x_l = solve_iteratively_w2(K, Kdag, y, eps, tbar, weights, wc);
 
 	%x_l should go approximately like 0.5*sinc(0.5t).
 	%Appears to, except near the ends we have a bit too much attentuation
