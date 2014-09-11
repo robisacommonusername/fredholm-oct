@@ -34,3 +34,14 @@ function [status,msg] = test_with_init()
 		solve_iteratively_opts('x0',x0,'tol',0.0001,'max_iters',10000));
 	[status, msg] = assert_eq(x,x_s,0.0001);
 end
+
+function [status, msg] = test_large()
+	x = rand(100,1);
+	Kd = diag(rand(100,1)+1);
+	weights = ones(100,1);
+	eps = 0.02;
+	Kdag = Kd;
+	S = inv(Kdag)*(eps*x + Kdag*Kd*x);
+	x_s = solve_iteratively(Kd,Kdag,S,eps,weights);
+	[status, msg] = assert_eq(x_s,x);
+end

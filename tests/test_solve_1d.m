@@ -13,23 +13,26 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [status, msg] = small_test_q0_gaussianbeam_10db()
-	kmin = 1;
-	kmax = 3;
-	alpha = 0.2;
+	lambda = 1;
+	l_min = lambda-0.5;
+	l_max = lambda+0.5;
+	kmin = 2*pi/l_max;
+	kmax = 2*pi/l_min;
+	alpha = 5;
 	fwhm = 2*sqrt(3)*alpha^2/(kmin+kmax)*2;
 	Q = 0;
-	z0 = fwhm/2;
-	zf = fwhm;
+	zf = 5*lambda;
+	z0 = zf/2;
 	npoints = 300;
-	ki = kmin:((kmax-kmin)/(npoints-1)):kmax;
+	ki = linspace(kmin,kmax,npoints);
 	A = ones(npoints,1);
 	A = A/norm(A);
 	noise_ratio = 0.1; %10dB SNR
-	solver_opts = solve_1d_opts('mean_chi',0.8125,'n',npoints);
+	solver_opts = solve_1d_opts('mean_chi',0.8125,'n',npoints,'solver','richardson_lpf');
 	
 	%thin object, one fwhm in width. refractive index varies between
 	%n=1.4 => chi = 0.96, and n=1.3 => chi = 0.69
-	chi = @(z) 0.135*(cos(2*pi*z/fwhm)+6.111).*heaviside(fwhm-z).*heaviside(z);
+	chi = @(z) 0.135*(cos(2*8*pi*z/zf)+6.111).*heaviside(zf-z).*heaviside(z);
 	
 	
 	f = fastcall_gauss_kernel(Q,alpha,z0);
