@@ -25,9 +25,10 @@ function [status, msg] = test_lowpass_sine_solution()
 	%that we know is well conditioned
 	K = diag(1:N);
 	Kdag = K';
-	y = K*x;
+	eps = 0.1;
+	y = inv(Kdag)*(eps*x+Kdag*(K*x));
 	wc = 4*pi;
-	xp = solve_iteratively_w2(K, Kdag, y, 100*N, t, weights, wc);
+	xp = solve_iteratively_w2(K, Kdag, y, norm(K)^2, eps, t, weights, wc);
 	[status, msg] = assert_eq(xp,x,0.01);
 	
 end
@@ -44,9 +45,10 @@ function [status, msg] = test_lowpass_cosine_solution()
 	%that we know is well conditioned
 	K = diag(1:N);
 	Kdag = K';
-	y = K*x;
+	eps = 0.1;
+	y = inv(Kdag)*(eps*x+Kdag*(K*x));
 	wc = 4*pi;
-	xp = solve_iteratively_w2(K, Kdag, y, 100*N, t, weights, wc);
+	xp = solve_iteratively_w2(K, Kdag, y, norm(K)^2, eps, t, weights, wc);
 	[status, msg] = assert_eq(xp,x,0.01);
 	
 end
@@ -71,10 +73,12 @@ function [status, msg] = test_projected_solution()
 	%that we know is well conditioned
 	K = diag(1:N);
 	Kdag = K';
-	eps = 100*N;
-	y = K*x;
+	gamma = norm(K)^2;
+	eps = 0.1;
 	wc = 10*pi;
-	x_l = solve_iteratively_w2(K, Kdag, y, eps, tbar, weights, wc);
+	y = inv(Kdag)*(eps*x + Kdag*(K*x) + gamma*x - gamma*lpf_quad(x,tbar,wc));
+	
+	x_l = solve_iteratively_w2(K, Kdag, y, gamma, eps, tbar, weights, wc);
 
 	%x_l should go approximately like 0.5*sinc(0.5t).
 	%Appears to, except near the ends we have a bit too much attentuation
