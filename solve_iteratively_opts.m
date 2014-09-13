@@ -6,7 +6,8 @@
 % 	x0:
 %	norm_k:
 %	tol:
-%	max_iters
+%	max_iters:
+%	basis:
 
 
 function opts = solve_iteratively_opts(varargin)
@@ -15,7 +16,8 @@ function opts = solve_iteratively_opts(varargin)
 		'x0',0,...
 		'norm_k',0,...
 		'max_iters',10000,...
-		'tol', 0.0001);
+		'tol', 0.0001,
+		'basis','spatial');
 	
 	key = '';
 	ii = 1;

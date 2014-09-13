@@ -67,14 +67,13 @@ function [chi, error, iterations] = solve_bicg_galerkin(Kd, S, pts, weights, wc,
 		otherwise
 		error('Unrecognised basis/representation for K: "%s"', opts.basis);
 	end;
-	
+	%keyboard();
 	%Now solve the system Kf*(chi_tilde) = Sf
 	chi_tilde_0 = fft(x0);
 	[chi_tilde,flag,error,iterations] = bicg(Kf, Sf, opts.tol, opts.max_iters);
 	if flag > 0
 		warning('Biconjugate gradient method stagnated or exceeded maximum number of iterations');
 	end;
-	
 	%Now invert the fourier transform by evaluating the 
 	%trig interpolating function at the quadrature points
 	chi = 1/N*exp(i*2*pi*ff.*zz)*chi_tilde;
