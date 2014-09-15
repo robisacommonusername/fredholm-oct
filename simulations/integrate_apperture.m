@@ -26,13 +26,13 @@ function S = integrate_apperture(vertices, field, varargin)
 	%that computed by the delaunay triangulation. The z coord (height) of
 	%each vertex of the triangular patch is given by the value of 'field'
 	%at each vertex. The volume enclosed between the patch and its projection
-	%onto the xy plane is 1/6 * (sum vertex heights) * (base area in xy plane)
+	%onto the xy plane is 1/3 * (sum vertex heights) * (base area in xy plane)
 	%This can be deduced by elementary geometry. Note that we can compute
 	%the vertex sums for every k simultaneously, and we can allow the vertex
 	%sums to be complex (provided we ensure our calculation for the base area
 	%returns a positive real).
 	[nverts, nk] = size(field);
-	S = zeros(1,nk)
+	S = zeros(1,nk);
 	for it = 1:ntriangles
 		ia = triangles(it,1);
 		ib = triangles(it,2);
@@ -43,10 +43,11 @@ function S = integrate_apperture(vertices, field, varargin)
 		F = [plane_points(ic,1),plane_points(ic,2),0];
 		twice_base_area = norm(cross(D-E,F-E));
 		%Get field values at the vertices for every k and sum them
+		%keyboard();
 		sum_field = field(ia,:)+field(ib,:)+field(ic,:);
-		%Integral over triangular patch is 1/12*(sum_fields)*twice_base_area
+		%Integral over triangular patch is 1/6*(sum_fields)*twice_base_area
 		%Add contribution from this patch onto total
-		S = S + (twice_base_area/12)*sum_field;
+		S = S + (twice_base_area/6)*sum_field;
 	end;
 	
 	%Transpose S to return it as a column vector - don't use ', S may be complex
