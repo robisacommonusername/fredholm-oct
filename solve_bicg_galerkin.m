@@ -45,13 +45,14 @@ function [chi, error, iterations] = solve_bicg_galerkin(Kd, S, pts, weights, wc,
 	%If Kd isn't in the right basis, we need to convert it to frequency domain
 	switch (opts.basis)
 		case 'spatial'
+		%keyboard();
 		%we don't need Kd defined at so many K values - lets cut down
 		n_quad = length(pts);
 		Kdint = zeros(N,n_quad);
 		for ii = 1:n_quad
 			Kdint(:,ii) = interp1(pts,Kd(:,ii),k,'spline');
 		end;
-		
+		%keyboard();
 		%We now need to compute the action of Kd on every exponential of form
 		%exp(i*2*pi*f) for the frequencies f defined above
 		[ff,zz] = meshgrid(f,pts); %f increases across row, z down columns

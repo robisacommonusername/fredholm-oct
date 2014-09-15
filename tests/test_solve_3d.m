@@ -57,12 +57,6 @@ function [status, msg] = test_cylinder()
 	alpha = pi/NA; %w0 = alpha/k
 	w0_max = alpha*lambda_max/2/pi;
 	z0 = 6*lambda; %focal plane at back of object
-	
-	%Do the transverse fourier transform analytically. Don't use the unitary
-	%transform here, use the convention \tilde{x}(\nu) = \int_R x(t) e^{-i \nu t} dt
-	% x(t) = \frac{1}{2\pi} \int_R \tilde{x}(\nu)e^{i \nu t} d\nu
-	%This is so we can apply the Matlab/octave fft/iift directly
-	chi_tilde = @(Q,z) (n^2-1)*bessel_j(1,Q/Q0)/Q*(heavisides(z-lambda)-heaviside(z - 6*lambda));
 
 	%Simulate axis positions to edge+2 waists
 	max_radius = (r+2*w0_max);
@@ -74,6 +68,10 @@ function [status, msg] = test_cylinder()
 		N = N+1;
 		max_radius = max_radius+Ts/2;
 	end;
+	%Do the transverse fourier transform analytically. Factor of N is to
+	%Correct for the 1/N that will occur when we do the ifft
+	chi_tilde = @(Q,z) (n^2-1)*N*besselj(1,r*Q)/(r*Q)*(heavisides(z-lambda)-heaviside(z - 6*lambda));
+	
 	Qs = 1/N*dQ*[0:((N-1)/2), ((1-N)/2):-1];
 	S_tilde = zeros(n_quad,N,N); %z axis is major dimension will rotate dimensions later
 	fast_opts = fastcall_opts('n',n_quad,'quad_method',quad_method);

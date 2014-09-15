@@ -18,7 +18,11 @@
 %	tol:
 %	reg_method:
 %	reg_opts:
-%
+%	basis: specify basis in which kernel will be computed.
+%		Recognised values:
+%		'spatial': default, basically a Nystrom solver
+%		'frequency': use with galerkin method solver when kernel is
+%		expressed in basis of complex exponentials
 
 function opts = solve_1d_opts(varargin)
 	%set up default values
