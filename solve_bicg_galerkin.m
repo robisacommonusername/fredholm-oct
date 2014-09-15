@@ -35,7 +35,7 @@ function [chi, error, iterations] = solve_bicg_galerkin(Kd, S, pts, weights, wc,
 	
 	%Our data is over-sampled - we only need S at N wavenumbers
 	k = linspace(0,1,N);
-	Sint = interp1(pts,S,k,'spline'); %We want a fairly smooth interpolation, I think cubic splines are ok
+	Sint = interp1(pts,S,k,'spline','extrap'); %We want a fairly smooth interpolation, I think cubic splines are ok
 	Sf = transpose(fft(Sint)); %don't use ', that does ctranspose
 	
 	%The frequencies represented are (in order returned by matlab fft)
@@ -50,7 +50,7 @@ function [chi, error, iterations] = solve_bicg_galerkin(Kd, S, pts, weights, wc,
 		n_quad = length(pts);
 		Kdint = zeros(N,n_quad);
 		for ii = 1:n_quad
-			Kdint(:,ii) = interp1(pts,Kd(:,ii),k,'spline');
+			Kdint(:,ii) = interp1(pts,Kd(:,ii),k,'spline','extrap');
 		end;
 		%keyboard();
 		%We now need to compute the action of Kd on every exponential of form
