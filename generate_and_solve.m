@@ -11,7 +11,7 @@
 %	varargin:
 %		noise_ratio: noise_power/signal power. Defaults to 0
 %		opts: a solve_1d_opts structure
-function generate_and_solve(chi,f,A,ki,zf,varargin)
+function [chi_exp,z_exp] = generate_and_solve(chi,f,A,ki,zf,varargin)
 	%We specify the noise ratio, rather than snr, as this allows us
 	%to specify zero noise. The snr in db is -10 log10(noise_ratio)
 	noise_ratio = 0;

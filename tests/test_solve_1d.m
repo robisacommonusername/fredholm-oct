@@ -27,8 +27,8 @@ function [status, msg] = small_test_q0_gaussianbeam_10db()
 	ki = linspace(kmin,kmax,npoints);
 	A = ones(npoints,1);
 	A = A/norm(A);
-	noise_ratio = 0.1; %10dB SNR
-	solver_opts = solve_1d_opts('mean_chi',0.8125,'n',npoints,'solver','richardson_lpf');
+	noise_ratio = 1; %10dB SNR
+	solver_opts = solve_1d_opts('mean_chi',0.8125,'n',npoints,'solver','bicg_galerkin');
 	
 	%thin object, one fwhm in width. refractive index varies between
 	%n=1.4 => chi = 0.96, and n=1.3 => chi = 0.69
@@ -36,7 +36,7 @@ function [status, msg] = small_test_q0_gaussianbeam_10db()
 	
 	
 	f = fastcall_gauss_kernel(Q,alpha,z0);
-	generate_and_solve(chi,f,A,ki,zf,noise_ratio,solver_opts);
+	[chi_exp,z_exp] = generate_and_solve(chi,f,A,ki,zf,noise_ratio,solver_opts);
 	
 	fprintf('\n------- small_test_q0_gaussianbeam_10db--------\nUser Input required:\n\n');
 	ans = input('Do the two graphs (more or less) coincide? Type Y for YES or N for NO ','s');

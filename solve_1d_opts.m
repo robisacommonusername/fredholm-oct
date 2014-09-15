@@ -16,8 +16,6 @@
 %	quad_method:
 %	max_iters:
 %	tol:
-%	reg_method:
-%	reg_opts:
 %	basis: specify basis in which kernel will be computed.
 %		Recognised values:
 %		'spatial': default, basically a Nystrom solver
@@ -33,8 +31,7 @@ function opts = solve_1d_opts(varargin)
 		'quad_method', 'gauss10',...
 		'max_iters',30,...
 		'tol', 0.00000001,...
-		'reg_method','lcurve_lpf',...
-		'reg_opts',struct());
+		'basis','spatial');
 	
 	key = '';
 	ii = 1;

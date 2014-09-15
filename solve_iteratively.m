@@ -1,9 +1,11 @@
 %Iterative solver for large 2nd kind Fredholm equation in form
-% KdagS = eps*(x-x0) + Kdag*K*x
+% S = K*x
+% Computes regularisation parameter epsilon, and then solves
+% KdagS = epsilon*(x-x0) + Kdag*K*x
 %
-function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, eps, weights, varargin)
+function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, weights, Kd_low, Kdag_low, S_low, varargin)
 	%set up options
-	if nargin > 5
+	if nargin > 7
 		opts = varargin{1};
 	else
 		opts = solve_iteratively_opts(); %defaults
@@ -19,15 +21,18 @@ function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, eps, weights,
 		normK = opts.norm_k;
 	end;
 	
+	%Compute regularisation parameter
+	epsilon = lcurve_calculate_eps(Kd_low, Kdag_low, S_low);
+	
 	%select relaxation parameter. 0.5 is a safety factor
 	%transform equation into form $(lambdaI - \hat{K})deltax = y$
 	%where chi = x0+deltax
-	lambda = -1*eps;
-	y = -1*(Kdag*S+eps*x0) - lambda*x0 + Kdag*(Kd*x0);
+	lambda = -1*epsilon;
+	y = -1*(Kdag*S+epsilon*x0) - lambda*x0 + Kdag*(Kd*x0);
 	mu = 0.5 * -2*lambda/(normK^2 - lambda);
 	
 	%error estimate
-	%M = max([1-mu ; mu*normK^2/eps + mu - 1]);
+	%M = max([1-mu ; mu*normK^2/epsilon + mu - 1]);
 	%error_multiplier = 1-M;
 	error_multiplier = mu;
 	abs_tol = opts.tol*error_multiplier;

@@ -30,12 +30,15 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 		kmax = ki(end);
 	end;
 	
+	%DIFFRACTION LIMIT
+	wc = 2*zf*kmax;
+	
 	%if no discretisation level set, set based on Diffraction limit - let
 	%'Nyquist' rate be 1.5 times diffraction limit. 1.5 is somewhat arbitrary magic number,
 	%just chosen different from 1 to gives us some design margin
 	%Note that quad points aren't equally spaced, hence 'Nyquist' rate = 1/2max(Ts)
 	if opts.n == 0
-		Nyquist = 1.5*2*kmax*zf;
+		Nyquist = 1.5*wc;
 		max_sample_period = 0.5/Nyquist;
 		opts.n = quad_points_needed(opts.quad_method,max_sample_period);
 	end;
@@ -47,42 +50,41 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 	[Kd,Kdag,pts,weights] = f(A,ki,zf,fast_opts);
 	sigma = resample_vector(S, ki, pts);
 	
-	%Construct low order discretisation
-	[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
-	sigma_low = resample_vector(S, ki, pts_low);
-	
-	%Compute regularisation parameter using low order discretisation
-	%if we're using lcurve_lpf, compute diffraction limit and cutoff
-	reg_opts = opts.reg_opts;
-	if strcmp(opts.reg_method,'lcurve_lpf')
-		wc = 2*kmax*zf; %diffraction limit for non-dimensionalised form
-		%Work out spatial sampling for low order approximation
-		fs = fast_opts.n_low; %Non dimensionalised version samples [0,1] => sampling freq is just number of samples (assume equally spaced)
-		Wc = wc/fs;
-		reg_opts = setfield(reg_opts,'Wc',Wc);
-	end;
-	eps = regularise2(Kd_low, Kdag_low, sigma_low, opts.reg_method, reg_opts);
-	
 	%solve equations
 	normK = operator_norm(Kd,Kdag,weights);
 	x0 = opts.mean_chi*ones(length(sigma),1);
 	switch (opts.solver)
 		case 'richardson_lpf'
-			[chi, error, iters] = solve_iteratively_lpf(Kd, Kdag, sigma, eps, pts, weights, 2*kmax*zf,...
-			solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
-				'max_iters',opts.max_iters));
+			%Construct low order discretisation
+			[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
+			sigma_low = resample_vector(S, ki, pts_low);
+			
+			[chi, error, iters] = solve_iteratively_lpf(Kd, Kdag, sigma,...
+				pts, weights, wc, Kd_low, Kdag_low, sigma_low,...
+				solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
+					'max_iters',opts.max_iters));
 		case 'richardson_zero'
-			[chi, error, iters] = solve_iteratively(Kd, Kdag, sigma, eps, weights,...
-			solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
-				'max_iters',opts.max_iters));
+			%Construct low order discretisation
+			[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
+			sigma_low = resample_vector(S, ki, pts_low);
+			
+			[chi, error, iters] = solve_iteratively(Kd, Kdag, sigma, weights,...
+				Kd_low,Kdag_low,sigma_low,...
+				solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
+					'max_iters',opts.max_iters));
 		case 'richardson_w2'
-			[chi, error, iters] = solve_iteratively_w2(Kd, Kdag, sigma, eps, pts, weights, 2*kmax*zf,...
-			solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
-				'max_iters',opts.max_iters));
+			%Construct low order discretisation
+			[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
+			sigma_low = resample_vector(S, ki, pts_low);
+			
+			[chi, error, iters] = solve_iteratively_w2(Kd, Kdag, sigma,...
+				pts, weights, wc, Kd_low, Kdag_low, sigma_low,...
+				solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
+					'max_iters',opts.max_iters));
 		case 'bicg_galerkin'
-			[chi, error, iters] = solve_bicg_galerkin(Kd, sigma, pts, weights, 2*kmax*zf,...
+			[chi, error, iters] = solve_bicg_galerkin(Kd, sigma, pts, weights, wc,...
 			solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
-				'max_iters',opts.max_iters)); %TODO: how to determine basis?
+				'max_iters',opts.max_iters,'basis',opts.basis));
 		
 		otherwise
 			warning('Unrecognised solver specified. Falling back to QR');
