@@ -30,15 +30,15 @@
 %
 %See also: dblquad
 %
-function [I,status] = dbl_integrate_adaptive(xx,yy,f,xa,xb,ya,yb, varargin)
+function [I,status] = dbl_integrate_adaptive_interpolate(xx,yy,f,xa,xb,ya,yb, varargin)
 	tol = 0.0001; %absolute tolerance
 	max_iters = 10; %maximum recursion depth
-	if nargin > 5
+	if nargin > 7
 		if varargin{1} > 0
 			tol = varargin{1};
 		end;
 	end;
-	if nargin > 6
+	if nargin > 8
 		if varargin{2} < 255
 			max_iters = varargin{2};
 		else
@@ -46,7 +46,13 @@ function [I,status] = dbl_integrate_adaptive(xx,yy,f,xa,xb,ya,yb, varargin)
 		end;
 	end;
 	
-	[I,err] = dbl_integrate(xx,yy,f,xa,xb,ya,yb);
+	%Select x and y values that are in range
+	indices = xx>xa & xx<xb & yy>ya & yy<yb;
+	xx = xx(indices);
+	yy = yy(indices);
+	f = f(indices);
+	
+	[I,err] = dbl_integrate_interpolate(xx,yy,f,xa,xb,ya,yb);
 	status = 0;
 	if (max_iters > 1)
 		if (err > tol)
