@@ -30,6 +30,15 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 		kmax = ki(end);
 	end;
 	
+	%Correction factors for solving mean case (i.e. only solving Q=0 case)
+	%Allow corrections to be specified as a row or a column vector
+	[corr_r, corr_c] = size(opts.correction);
+	if corr_r > corr_c
+		S = S.*opts.correction;
+	else
+		S = S.*transpose(opts.correction); %allow complex corrections
+	end;
+	
 	%DIFFRACTION LIMIT
 	wc = 2*zf*kmax;
 	

@@ -33,7 +33,7 @@ function [chi, error, iterations] = solve_iteratively_w2(Kd, Kdag, S,...
 	end;
 	
 	%Select regularisation parameters
-	gamma = 10*(normK)^2;
+	gamma = 0.5*(normK)^2;
 	n_low = length(S_low);
 	fs = 1/n_low; %Recall that length of non-dimensionalised domain is 1, hence sampling freq is 1/#samples
 	Wc = wc/fs;

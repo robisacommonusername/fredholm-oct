@@ -21,6 +21,9 @@
 %		'spatial': default, basically a Nystrom solver
 %		'frequency': use with galerkin method solver when kernel is
 %		expressed in basis of complex exponentials
+%	correction: correction factors required when solving 1D laminar case
+%		(i.e. only solving the Q=0 case). For a Gaussian beam with Ralston's
+%		non-uinitary conventions, the required corrections is alpha/k
 
 function opts = solve_1d_opts(varargin)
 	%set up default values
@@ -31,7 +34,8 @@ function opts = solve_1d_opts(varargin)
 		'quad_method', 'gauss10',...
 		'max_iters',30,...
 		'tol', 0.00000001,...
-		'basis','spatial');
+		'basis','spatial',
+		'correction',1);
 	
 	key = '';
 	ii = 1;

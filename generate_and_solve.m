@@ -28,8 +28,20 @@ function [chi_exp,z_exp] = generate_and_solve(chi,f,A,ki,zf,varargin)
 	
 	%Determine whether or not to save the plot
 	if nargin > 7
+		plot_title = varargin{3};
+	else
+		plot_title = '';
+	end;
+	
+	if nargin > 8
+		x_label = varargin{4};
+	else
+		x_label = 'z';
+	end;
+	
+	if nargin > 9
 		do_save = 1;
-		fn = varargin{3};
+		fn = varargin{5};
 	else
 		do_save = 0;
 	end;
@@ -44,7 +56,10 @@ function [chi_exp,z_exp] = generate_and_solve(chi,f,A,ki,zf,varargin)
 	hold on;
 	plot(z_exp,chi_exp);
 	plot(z_exp, arrayfun(chi, z_exp),'r');
-	legend('Experimental solution','Exact solution');
+	legend('Recovered solution','Exact solution');
+	ylabel('Susceptibility');
+	xlabel(x_label);
+	title(plot_title);
 	hold off;
 
 	%Optionally, save the plot
