@@ -6,9 +6,6 @@
 %effective when the quadrature points are much more closely spaced than
 %the Nyquist sampling rate
 %
-%Note that in this method we don't compute a regularisation parameter.
-%The regularisation is constraining the solution to w^2(B)
-
 %TODO:
 % Preconditioning.
 %	A possible strategy here is to find the first few eigenfunctions, shrink by appropriate factor, leave other directions unscaled
@@ -68,10 +65,13 @@ function [chi, error, iterations] = solve_bicg_galerkin(Kd, S, pts, weights, wc,
 		otherwise
 		error('Unrecognised basis/representation for K: "%s"', opts.basis);
 	end;
-	%keyboard();
+	
+	%Compute regularisation parameter
+	epsilon = lcurve_calculate_eps(Kf, Kf', Sf);
+
 	%Now solve the system Kf*(chi_tilde) = Sf
 	chi_tilde_0 = fft(x0);
-	[chi_tilde,flag,error,iterations] = bicg(Kf, Sf, opts.tol, opts.max_iters);
+	[chi_tilde,flag,error,iterations] = bicg(epsilon*eye(N)+Kf'*Kf, Kf'*Sf, opts.tol, opts.max_iters);
 	if flag > 0
 		warning('Biconjugate gradient method stagnated or exceeded maximum number of iterations');
 	end;

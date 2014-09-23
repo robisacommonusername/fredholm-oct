@@ -32,7 +32,6 @@ function [status, msg] = test_lowpass_sine_solution()
 	plot(t,xp,'r');
 	plot(t,x);
 	hold off;
-	keyboard();
 	fprintf('\n------- test_lowpass_sine_solution--------\nUser Input required:\n\n');
 	ans = input('Do the two graphs (more or less) coincide? Type Y for YES or N for NO ','s');
 	fprintf('\n');
