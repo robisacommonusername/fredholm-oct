@@ -24,6 +24,7 @@
 %	correction: correction factors required when solving 1D laminar case
 %		(i.e. only solving the Q=0 case). For a Gaussian beam with Ralston's
 %		non-uinitary conventions, the required corrections is alpha/k
+%	min_feature: minimum feature size. Set to 0 for diffraction limit
 
 function opts = solve_1d_opts(varargin)
 	%set up default values
@@ -34,8 +35,9 @@ function opts = solve_1d_opts(varargin)
 		'quad_method', 'gauss10',...
 		'max_iters',30,...
 		'tol', 0.00000001,...
-		'basis','spatial',
-		'correction',1);
+		'basis','spatial',...
+		'correction',1,...
+		'min_feature',0);
 	
 	key = '';
 	ii = 1;

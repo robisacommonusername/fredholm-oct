@@ -39,8 +39,12 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 		S = S.*transpose(opts.correction); %allow complex corrections
 	end;
 	
-	%DIFFRACTION LIMIT
-	wc = 2*zf*kmax;
+	%Determine minimum feature size, or set to diffraction limit
+	if (opts.min_feature < pi/kmax)
+		wc = 2*zf*kmax; %diffraction limit for non dimensionalised
+	else
+		wc = 4*pi/(opts.min_feature/zf);
+	end;
 	
 	%if no discretisation level set, set based on Diffraction limit - let
 	%'Nyquist' rate be 1.5 times diffraction limit. 1.5 is somewhat arbitrary magic number,
