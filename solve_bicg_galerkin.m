@@ -34,6 +34,8 @@ function [chi, error, iterations] = solve_bicg_galerkin(Kd, S, pts, weights, wc,
 	k = linspace(0,1,N);
 	Sint = interp1(pts,S,k,'spline','extrap'); %We want a fairly smooth interpolation, I think cubic splines are ok
 	Sf = transpose(fft(Sint)); %don't use ', that does ctranspose
+	x0int = interp1(pts,x0,k,'spline','extrap');
+	x0f = transpose(fft(x0int));
 	
 	%The frequencies represented are (in order returned by matlab fft)
 	%1/N*[0, 1/Ts, 2/Ts, ... (N-1)/(2Ts), (1-N)/(2Ts), ... -2/Ts, -1/Ts]
@@ -69,9 +71,9 @@ function [chi, error, iterations] = solve_bicg_galerkin(Kd, S, pts, weights, wc,
 	%Compute regularisation parameter
 	epsilon = lcurve_calculate_eps(Kf, Kf', Sf);
 
-	%Now solve the system Kf*(chi_tilde) = Sf
+	%Now solve the system (epsI+Kdagf*Kf)*(chi_tilde) = Kdagf*Sf + eps*x0f
 	chi_tilde_0 = fft(x0);
-	[chi_tilde,flag,error,iterations] = bicg(epsilon*eye(N)+Kf'*Kf, Kf'*Sf, opts.tol, opts.max_iters);
+	[chi_tilde,flag,error,iterations] = bicg(epsilon*eye(N)+Kf'*Kf, Kf'*Sf+epsilon*x0f, opts.tol, opts.max_iters);
 	if flag > 0
 		warning('Biconjugate gradient method stagnated or exceeded maximum number of iterations');
 	end;
