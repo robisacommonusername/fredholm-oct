@@ -45,19 +45,3 @@ function [status, msg] = test_large()
 	x_s = solve_iteratively(Kd,Kdag,S,weights,eps);
 	[status, msg] = assert_eq(x_s,x);
 end
-
-function [status, msg] = test_overdetermined()
-	%Solve a least squares problem
-	x = (1:20)';
-	y = 2*x+1;
-	y = awgn(y,1);
-	%minimise ||y-A p||, where p are the parameters m,c in y=mx+c
-	A = [x,ones(20,1)];
-	p_it = solve_iteratively(A,A',y,ones(2,1),0);
-	figure;
-	hold on;
-	scatter(x,y);
-	plot(x,p_it(1)*x+p_it(2),'r');
-	hold off;
-	[status, msg] = assert_eq(p_it, A\y);
-end
