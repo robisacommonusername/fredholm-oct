@@ -28,7 +28,7 @@ function [status, msg] = test_lowpass_sine_solution()
 	eps = 0.1;
 	y = inv(Kdag)*(eps*x+Kdag*(K*x));
 	wc = 4*pi;
-	xp = solve_iteratively_w2(K, Kdag, y, norm(K)^2, eps, t, weights, wc);
+	xp = solve_iteratively_w2(K, Kdag, y, t, weights, eps, wc, norm(K)^2);
 	[status, msg] = assert_eq(xp,x,0.01);
 	
 end
@@ -48,7 +48,7 @@ function [status, msg] = test_lowpass_cosine_solution()
 	eps = 0.1;
 	y = inv(Kdag)*(eps*x+Kdag*(K*x));
 	wc = 4*pi;
-	xp = solve_iteratively_w2(K, Kdag, y, norm(K)^2, eps, t, weights, wc);
+	xp = solve_iteratively_w2(K, Kdag, y, t, weights, eps, wc, norm(K)^2);
 	[status, msg] = assert_eq(xp,x,0.01);
 	
 end
@@ -78,7 +78,7 @@ function [status, msg] = test_projected_solution()
 	wc = 10*pi;
 	y = inv(Kdag)*(eps*x + Kdag*(K*x) + gamma*x - gamma*lpf_quad(x,tbar,wc));
 	
-	x_l = solve_iteratively_w2(K, Kdag, y, gamma, eps, tbar, weights, wc);
+	x_l = solve_iteratively_w2(K, Kdag, y, tbar, weights, eps, wc, gamma);
 
 	%x_l should go approximately like 0.5*sinc(0.5t).
 	%Appears to, except near the ends we have a bit too much attentuation

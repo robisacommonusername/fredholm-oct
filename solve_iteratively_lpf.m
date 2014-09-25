@@ -15,16 +15,17 @@
 %onto w^2(B). We hope that this solution is 'close' to the true solution,
 % i.e. ||x - Px||<<||x||
 function [chi, error, iterations] = solve_iteratively_lpf(Kd, Kdag, S,...
-	pts, weights, wc, Kd_low, Kdag_low, S_low, varargin)
+	pts, weights, epsilon, wc, varargin)
 	%set up options
-	if nargin > 9
+	if nargin > 7
 		opts = varargin{1};
 	else
 		opts = solve_iteratively_opts(); %defaults
 	end;
 	x0 = opts.x0;
     if x0 == 0
-        x0 = zeros(length(S),1);
+		[r,c] = size(Kd);
+        x0 = zeros(c,1);
     end;
 
 	if opts.norm_k == 0
@@ -32,12 +33,6 @@ function [chi, error, iterations] = solve_iteratively_lpf(Kd, Kdag, S,...
 	else
 		normK = opts.norm_k;
 	end;
-	
-	%calculate regularisation parameter
-	[n_low,n_low] = size(Kd_low);
-	fs = 1/n_low;
-	Wc = wc/fs;
-	epsilon = lcurve_calculate_eps_lpf(Kd_low, Kdag_low, S_low, Wc);
 	
 	%select relaxation parameter. 0.5 is a safety factor
 	%transform equation into form $(lambdaI - \hat{K})deltax = y$

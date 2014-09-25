@@ -3,16 +3,17 @@
 % Computes regularisation parameter epsilon, and then solves
 % KdagS = epsilon*(x-x0) + Kdag*K*x
 %
-function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, weights, Kd_low, Kdag_low, S_low, varargin)
+function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, weights, epsilon, varargin)
 	%set up options
-	if nargin > 7
+	if nargin > 5
 		opts = varargin{1};
 	else
 		opts = solve_iteratively_opts(); %defaults
 	end;
 	x0 = opts.x0;
     if x0 == 0
-        x0 = zeros(length(S),1);
+		[r,c] = size(Kd);
+        x0 = zeros(c,1);
     end;
 
 	if opts.norm_k == 0
@@ -20,9 +21,6 @@ function [chi, error, iterations] = solve_iteratively(Kd, Kdag, S, weights, Kd_l
 	else
 		normK = opts.norm_k;
 	end;
-	
-	%Compute regularisation parameter
-	epsilon = lcurve_calculate_eps(Kd_low, Kdag_low, S_low);
 	
 	%select relaxation parameter. 0.5 is a safety factor
 	%transform equation into form $(lambdaI - \hat{K})deltax = y$

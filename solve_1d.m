@@ -68,33 +68,40 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 	x0 = opts.mean_chi*ones(length(sigma),1);
 	switch (opts.solver)
 		case 'richardson_lpf'
-			%Construct low order discretisation
+			%Construct low order discretisation and regularise
 			[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
 			sigma_low = resample_vector(S, ki, pts_low);
+			ws = 2*pi*fast_opts.n_low;
+			epsilon = lcurve_calculate_eps_lpf(Kd_low, Kdag_low, sigma_low, wc/ws);
 			
 			[chi, error, iters] = solve_iteratively_lpf(Kd, Kdag, sigma,...
-				pts, weights, wc, Kd_low, Kdag_low, sigma_low,...
+				pts, weights, epsilon, wc,...
 				solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
 					'max_iters',opts.max_iters));
 		case 'richardson_zero'
-			%Construct low order discretisation
+			%Construct low order discretisation and regularise
 			[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
 			sigma_low = resample_vector(S, ki, pts_low);
+			ws = 2*pi*fast_opts.n_low;
+			epsilon = lcurve_calculate_eps(Kd_low, Kdag_low, sigma_low, wc/ws);
 			
-			[chi, error, iters] = solve_iteratively(Kd, Kdag, sigma, weights,...
-				Kd_low,Kdag_low,sigma_low,...
+			[chi, error, iters] = solve_iteratively(Kd, Kdag, sigma, weights,epsilon,...
 				solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
 					'max_iters',opts.max_iters));
 		case 'richardson_w2'
-			%Construct low order discretisation
+			%Construct low order discretisation and regularise
 			[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
 			sigma_low = resample_vector(S, ki, pts_low);
+			ws = 2*pi*fast_opts.n_low;
+			epsilon = lcurve_calculate_eps_lpf(Kd_low, Kdag_low, sigma_low, wc/ws);
+			gamma = 0.5*normK^2;
 			
 			[chi, error, iters] = solve_iteratively_w2(Kd, Kdag, sigma,...
-				pts, weights, wc, Kd_low, Kdag_low, sigma_low,...
+				pts, weights, epsilon, wc, gamma,
 				solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
 					'max_iters',opts.max_iters));
 		case 'bicg_galerkin'
+			%This function will handle the computation of its own regularisation
 			[chi, error, iters] = solve_bicg_galerkin(Kd, sigma, pts, weights, wc,...
 			solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
 				'max_iters',opts.max_iters,'basis',opts.basis));
@@ -117,8 +124,10 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 			%this explicitly
 			
 			%solve Kdag*sigma = eps(x-x0) + Kdag*K*x
-			b = Kdag*sigma + eps*x0;
-			A = eps*eye(opts.n) + Kdag*Kd;
+			%TODO: update comments here, they are out of date
+			%Actually calculate the regularisation parameter epsilon
+			b = Kdag*sigma + epsilon*x0;
+			A = epsilon*eye(opts.n) + Kdag*Kd;
 			error = 0;
 			iters = 1;
 			chi = A\b;

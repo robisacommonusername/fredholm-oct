@@ -69,7 +69,11 @@ function [chi, error, iterations] = solve_bicg_galerkin(Kd, S, pts, weights, wc,
 	end;
 	
 	%Compute regularisation parameter
-	epsilon = lcurve_calculate_eps(Kf, Kf', Sf);
+	if opts.regularise
+		epsilon = lcurve_calculate_eps(Kf, Kf', Sf);
+	else
+		epsilon = 0;
+	end;
 
 	%Now solve the system (epsI+Kdagf*Kf)*(chi_tilde) = Kdagf*Sf + eps*x0f
 	chi_tilde_0 = fft(x0);

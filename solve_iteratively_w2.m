@@ -14,16 +14,17 @@
 %onto w^2(B). We hope that this solution is 'close' to the true solution,
 % i.e. ||x - Px||<<||x||
 function [chi, error, iterations] = solve_iteratively_w2(Kd, Kdag, S,...
-	pts, weights, wc, Kd_low, Kdag_low, S_low,varargin)
+	pts, weights, epsilon, wc, gamma,varargin)
 	%set up options
-	if nargin > 10
+	if nargin > 8
 		opts = varargin{1};
 	else
 		opts = solve_iteratively_opts(); %defaults
 	end;
 	x0 = opts.x0;
     if x0 == 0
-        x0 = zeros(length(S),1);
+		[r,c] = size(Kd);
+        x0 = zeros(c,1);
     end;
 
 	if opts.norm_k == 0
@@ -31,13 +32,6 @@ function [chi, error, iterations] = solve_iteratively_w2(Kd, Kdag, S,...
 	else
 		normK = opts.norm_k;
 	end;
-	
-	%Select regularisation parameters
-	gamma = 0.5*(normK)^2;
-	n_low = length(S_low);
-	fs = 1/n_low; %Recall that length of non-dimensionalised domain is 1, hence sampling freq is 1/#samples
-	Wc = wc/fs;
-	epsilon = lcurve_calculate_eps_lpf(Kd_low, Kdag_low, S_low, Wc);
 	
 	%select relaxation parameter
 	mu = epsilon/(normK^2+gamma+epsilon);
