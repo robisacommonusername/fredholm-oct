@@ -33,6 +33,11 @@ function [chi, error, iterations] = solve_iteratively_w2(Kd, Kdag, S,...
 		normK = opts.norm_k;
 	end;
 	
+	%Check for case where regularisation constant is 0
+	if abs(epsilon-eps) < 2*eps
+		warning('No regularisation parameter. You should use solve_richardson_no_eps instead');
+	end;
+	
 	%select relaxation parameter
 	mu = epsilon/(normK^2+gamma+epsilon);
 	y = (mu/epsilon) * (Kdag*S);

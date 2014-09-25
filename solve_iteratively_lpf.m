@@ -34,6 +34,11 @@ function [chi, error, iterations] = solve_iteratively_lpf(Kd, Kdag, S,...
 		normK = opts.norm_k;
 	end;
 	
+	%Check for case where regularisation constant is 0
+	if abs(epsilon-eps) < 2*eps
+		warning('No regularisation parameter. You should use solve_richardson_no_eps instead');
+	end;
+	
 	%select relaxation parameter. 0.5 is a safety factor
 	%transform equation into form $(lambdaI - \hat{K})deltax = y$
 	%where chi = x0+deltax
