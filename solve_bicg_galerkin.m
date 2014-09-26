@@ -77,9 +77,12 @@ function [chi, error, iterations] = solve_bicg_galerkin(Kd, S, pts, weights, wc,
 
 	%Now solve the system (epsI+Kdagf*Kf)*(chi_tilde) = Kdagf*Sf + eps*x0f
 	chi_tilde_0 = fft(x0);
-	[chi_tilde,flag,error,iterations] = bicg(epsilon*eye(N)+Kf'*Kf, Kf'*Sf+epsilon*x0f, opts.tol, opts.max_iters);
+	%Solve the normal equations using conjugate gradient method. Don't
+	%Form grammian directly, calculate as Kf'*(Kf*x)
+	Kfdag = Kf';
+	[chi_tilde,flag,error,iterations] = cgs(@(x) epsilon*x+Kfdag*(Kf*x), Kf'*Sf+epsilon*x0f, opts.tol, opts.max_iters);
 	if flag > 0
-		warning('Biconjugate gradient method stagnated or exceeded maximum number of iterations');
+		warning('Conjugate gradient method stagnated or exceeded maximum number of iterations');
 	end;
 	%Now invert the fourier transform by evaluating the 
 	%trig interpolating function at the quadrature points
