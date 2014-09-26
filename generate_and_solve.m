@@ -62,8 +62,9 @@ function [chi_exp,z_exp] = generate_and_solve(chi,f,A,ki,zf,varargin)
 	title(plot_title);
 	hold off;
 
-	%Optionally, save the plot
+	%Optionally, save the plot (in both png and eps)
 	if do_save
-		print(fn);
+		print(sprintf('%s.png',fn));
+		print(sprintf('%s.eps',fn));
 	end;
 end

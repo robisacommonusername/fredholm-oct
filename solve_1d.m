@@ -56,6 +56,11 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 		opts.n = quad_points_needed(opts.quad_method,max_sample_period);
 	end;
 	
+	%Set maximum iterations to size of matrix if it hasn't been set
+	if opts.max_iters == 0
+		opts.max_iters = opts.n;
+	end;
+	
 	%Options to pass to the fastcall function.
 	fast_opts = fastcall_opts('quad_method', opts.quad_method,'n',opts.n,'low',0);
 	
@@ -131,10 +136,9 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 			error = 0;
 			iters = 1;
 			chi = A\b;
-	end
-	
+	end;
 	
 	%unwarp z axis
 	z_pts = unwarp_data(fast_opts.warp_method, pts, zf);
-	
+	keyboard();
 end
