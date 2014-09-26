@@ -30,15 +30,6 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 		kmax = ki(end);
 	end;
 	
-	%Correction factors for solving mean case (i.e. only solving Q=0 case)
-	%Allow corrections to be specified as a row or a column vector
-	[corr_r, corr_c] = size(opts.correction);
-	if corr_r > corr_c
-		S = S.*opts.correction;
-	else
-		S = S.*transpose(opts.correction); %allow complex corrections
-	end;
-	
 	%Determine minimum feature size, or set to diffraction limit
 	if (opts.min_feature < pi/kmax)
 		wc = 2*zf*kmax; %diffraction limit for non dimensionalised
@@ -138,7 +129,16 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 			chi = A\b;
 	end;
 	
+	%Apply correction factors
+	%Correction factors for solving mean case (i.e. only solving Q=0 case)
+	%Allow corrections to be specified as a row or a column vector
+	[corr_r, corr_c] = size(opts.correction);
+	if corr_r > corr_c
+		chi = x0 + opts.correction.*(chi-x0);
+	else
+		chi = x0 + transpose(opts.correction).*(chi-x0); %allow complex corrections
+	end;
+	
 	%unwarp z axis
 	z_pts = unwarp_data(fast_opts.warp_method, pts, zf);
-	keyboard();
 end
