@@ -26,7 +26,7 @@ function [status, msg] = test_lowpass_sine_solution()
 	K = diag(1:N);
 	y = K*x;
 	wc = 4*pi;
-	xp = solve_bicg_galerkin(K, y, t, weights, wc);
+	xp = solve_bicg_galerkin(K, y, t, t, weights, wc);
 	figure;
 	hold on;
 	plot(t,xp,'r');
@@ -58,7 +58,7 @@ function [status, msg] = test_lowpass_cosine_solution()
 	K = diag(1:N);
 	y = K*x;
 	wc = 4*pi;
-	xp = solve_bicg_galerkin(K, y, t, weights, wc);
+	xp = solve_bicg_galerkin(K, y, t, t, weights, wc);
 	figure;
 	hold on;
 	plot(t,xp,'r');
@@ -99,7 +99,8 @@ function [status, msg] = test_projected_solution()
 	eps = 100*N;
 	y = K*x;
 	wc = 10*pi;
-	x_l = solve_bicg_galerkin(K, y, tbar, weights, wc);
+	%Don't regularise the solution
+	x_l = solve_bicg_galerkin(K, y, tbar, tbar, weights, wc, solve_iteratively_opts('regularise',0));
 
 	%x_l should go approximately like 0.5*sinc(0.5t).
 	%Appears to, except near the ends we have a bit too much attentuation
