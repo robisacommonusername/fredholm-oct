@@ -53,15 +53,24 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 	end;
 	
 	%Options to pass to the fastcall function.
-	fast_opts = fastcall_opts('quad_method', opts.quad_method,'n',opts.n,'low',0);
+	fast_opts = fastcall_opts('quad_method', opts.quad_method,'n',opts.n,'low',0, 'wc', wc);
 	
 	%Calculate discretised operator, quad points, etc
 	[Kd,Kdag,pts,weights] = f(A,ki,zf,fast_opts);
-	sigma = resample_vector(S, ki, pts);
+	
+	%Downsample S if required
+	if opts.downsample
+		sigma = resample_vector(S, ki, pts);
+	else
+		sigma = S;
+	end;
 	
 	%solve equations
 	normK = operator_norm(Kd,Kdag,weights);
-	x0 = opts.mean_chi*ones(length(sigma),1);
+	x0 = opts.mean_chi*ones(length(pts),1);
+	%TODO:
+	%ammend all solvers to handle overdetermined problems. Will need to
+	%pass additional ki parameter. This way we can make downsampling optional
 	switch (opts.solver)
 		case 'richardson_lpf'
 			%Construct low order discretisation and regularise
@@ -70,6 +79,8 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 			ws = 2*pi*fast_opts.n_low;
 			epsilon = lcurve_calculate_eps_lpf(Kd_low, Kdag_low, sigma_low, wc/ws);
 			
+			%downsample
+			sigma = resample_vector(S, ki, pts);
 			[chi, error, iters] = solve_iteratively_lpf(Kd, Kdag, sigma,...
 				pts, weights, epsilon, wc,...
 				solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
@@ -80,7 +91,7 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 			sigma_low = resample_vector(S, ki, pts_low);
 			ws = 2*pi*fast_opts.n_low;
 			epsilon = lcurve_calculate_eps(Kd_low, Kdag_low, sigma_low, wc/ws);
-			
+
 			[chi, error, iters] = solve_iteratively(Kd, Kdag, sigma, weights,epsilon,...
 				solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
 					'max_iters',opts.max_iters));
@@ -91,13 +102,21 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 			ws = 2*pi*fast_opts.n_low;
 			epsilon = lcurve_calculate_eps_lpf(Kd_low, Kdag_low, sigma_low, wc/ws);
 			gamma = 0.5*normK^2;
-			
+
 			[chi, error, iters] = solve_iteratively_w2(Kd, Kdag, sigma,...
 				pts, weights, epsilon, wc, gamma,
 				solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
 					'max_iters',opts.max_iters));
 		case 'bicg_galerkin'
 			%This function will handle the computation of its own regularisation
+			%no downsampling required, this function can handle overdetermined
+			%problems. In future, change S to sigma, at the moment we have
+			%downsampling on by default
+			%spatial_pts = linspace(0,1,opts.n);
+			%If the kernel is a frequency domain kernel, pts will not be meaningful
+			if strcmp(opts.basis, 'frequency')
+				pts = linspace(0,1,opts.n);
+			end;
 			[chi, error, iters] = solve_bicg_galerkin(Kd, sigma, ki, pts, weights, wc,...
 			solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
 				'max_iters',opts.max_iters,'basis',opts.basis));

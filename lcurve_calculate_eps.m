@@ -18,7 +18,6 @@ function regu = lcurve_calculate_eps(Kd, Kdag, Sbar)
 	%Need to sort the singular values and singular vectors
 	[U,sm,V] = csvd(Kd);
 	b = Sbar;
-	
 	npoints = 200;  % Number of points on the L-curve
 	smin_ratio = 16*eps;  % Smallest regularization parameter. eps is machine epsilon
 	

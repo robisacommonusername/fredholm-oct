@@ -25,6 +25,12 @@
 %		(i.e. only solving the Q=0 case). For a Gaussian beam with Ralston's
 %		non-uinitary conventions, the required corrections is alpha/k
 %	min_feature: minimum feature size. Set to 0 for diffraction limit
+%	downsample: if set to 1, will interpolate user supplied data S to
+%		only use values of S at the collocation points. By default, this is
+%		set to 0, in which case all the data is used (possibly overdetermining
+%		the poblem), and a least squares solution returned. The only reason
+%		one might wish to downsample is to improve performance, as it will
+%		downsample S to the minimum number of entries required to solve the problem
 
 function opts = solve_1d_opts(varargin)
 	%set up default values
@@ -37,7 +43,8 @@ function opts = solve_1d_opts(varargin)
 		'tol', 0.00000001,...
 		'basis','spatial',...
 		'correction',1,...
-		'min_feature',0);
+		'min_feature',0,...
+		'downsample',1);
 	
 	key = '';
 	ii = 1;

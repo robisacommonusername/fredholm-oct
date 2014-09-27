@@ -34,9 +34,9 @@ function [chi, error, iterations] = solve_bicg_galerkin(Kd, S, ki, pts, weights,
 
 	%Convert initial estimate into the frequency domain. Need it to be
 	%a sequence of length N, so will need to interpolate
-	new_z = linspace(0,1,N);
-	x0_N = interp1(pts, x0, new_z, 'spline', 'extrap');
-	x0f = transpose(fft(x0_N));
+	new_z = transpose(linspace(0,1,N));
+	x0_N = interp1(pts, x0, new_z, 'linear', 'extrap');
+	x0f = fft(x0_N);
 	
 	%The frequencies represented are (in order returned by matlab fft)
 	%1/(N)*[0, 1/Ts, 2/Ts, ... (N-1)/(2Ts), (1-N)/(2Ts), ... -2/Ts, -1/Ts]
@@ -82,7 +82,7 @@ function [chi, error, iterations] = solve_bicg_galerkin(Kd, S, ki, pts, weights,
 	end;
 	%Now invert the fourier transform by evaluating the 
 	%trig interpolating function at the quadrature points
-	chi = exponentials*chi_tilde + x0;
+	chi = exponentials*chi_tilde;
 	
 	
 end

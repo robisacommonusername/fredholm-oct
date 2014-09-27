@@ -47,7 +47,6 @@ function [chi_exp,z_exp] = generate_and_solve(chi,f,A,ki,zf,varargin)
 	end;
 	
 	[Sexp, k_quad] = generate_test_data(chi, f, A, ki, zf, noise_ratio, opts);
-	
 	%Attempt to solve
 	[chi_exp,z_exp] = solve_1d(f, Sexp, A, ki, zf, opts);
 	
