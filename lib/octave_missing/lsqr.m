@@ -112,22 +112,27 @@ function [x,flag,relres,iters,residual] = lsqr(A,b, varargin)
 		% Compute solution norm and residual
 		%TODO - this appears to be returning incorrect value for overdetermined
 		%systems, although the convergence is correct.
-		delta = s2*rrho; gamma_bar = -c2*rrho; rhs = phi - delta*z;
+		delta = s2*rrho;
+		gamma_bar = -c2*rrho;
+		rhs = phi - delta*z;
 		z_bar = rhs/gamma_bar;
 		gamma = norm([gamma_bar,theta]);
-		c2 = gamma_bar/gamma; s2 = theta/gamma;
-		z = rhs/gamma; xnorm = norm([xnorm,z]);
+		c2 = gamma_bar/gamma;
+		s2 = theta/gamma;
+		z = rhs/gamma;
+		xnorm = norm([xnorm,z]);
 		old_residual = residual;
 		residual = abs(phi_bar);
 		relres = residual/xnorm;
 		
+		% Update the solution.
+		x_old = x;
+		x = x + (phi/rrho)*w; w = v - (theta/rrho)*w;
+		
 		%Check for stagnation
-		if (abs(residual-old_residual) < 2*eps)
+		if (abs(x - x_old) < 2*eps)
 			flag = 3;
 		end;
-		
-		% Update the solution.
-		x = x + (phi/rrho)*w; w = v - (theta/rrho)*w;
 		
 		iters = iters + 1;
 	end;

@@ -2,7 +2,7 @@
 %doesn't have to be run on matlab (which has a built in lsqr implementation)
 %However, the tests should pass on both, the octave implementation is 
 %designed to be matlab compatible
-function ret = test_lpf_quad(varargin)
+function ret = test_lsqr(varargin)
 	test_names = find_tests(mfilename());
 	tests={};
 	for ii = 1:length(test_names) 
@@ -48,7 +48,6 @@ function [status, msg] = test_overdetermined()
 	A = [t, ones(20,1)];
 	p = pinv(A)*y;
 	p_lsqr = lsqr(A, y, 0.001);
-	keyboard();
 	[status, msg] = assert_eq(p,p_lsqr,0.001);
 end
 
