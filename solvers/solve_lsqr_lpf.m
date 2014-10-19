@@ -33,7 +33,6 @@ function Ax = filtered_damp_lsqr(A, epsilon, P, x, t)
 	end;
 	if (strcmp(t,'transp'))
 		n = length(x)/2;
-		if 
 		Ax = A'*f(x(1:n)) + epsilon*x((n+1):(2*n));
 	else
 		Ax = [A*f(x); epsilon*x];
