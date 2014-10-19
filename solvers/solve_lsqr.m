@@ -14,8 +14,7 @@ function [chi, error, iterations] = solve_lsqr(Kd, S, epsilon, varargin)
         x0 = zeros(c,1);
     end;
 	
-	y = Kdag*S+epsilon*x0;
-	y_damped = [y;sqrt(epsilon)*x0];
+	y_damped = [S;sqrt(epsilon)*x0];
 	f = @(x,t) damp_lsqr(Kd, sqrt(epsilon), x, t);
 	[chi, flag, error, iterations] = lsqr(f, y_damped, opts.tol, opts.max_iters);
 	
