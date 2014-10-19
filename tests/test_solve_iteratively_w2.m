@@ -76,7 +76,7 @@ function [status, msg] = test_projected_solution()
 	gamma = norm(K)^2;
 	eps = 0.1;
 	wc = 10*pi;
-	y = inv(Kdag)*(eps*x + Kdag*(K*x) + gamma*x - gamma*lpf_quad(x,tbar,wc));
+	y = inv(Kdag)*(eps*x + Kdag*(K*x) + gamma*x - gamma*lpf_quad_lsqr(x,tbar,wc,weights));
 	
 	x_l = solve_iteratively_w2(K, Kdag, y, tbar, weights, eps, wc, gamma);
 

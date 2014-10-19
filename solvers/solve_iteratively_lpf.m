@@ -54,12 +54,12 @@ function [chi, error, iterations] = solve_iteratively_lpf(Kd, Kdag, S,...
 	
 	iterations = 0;
 	error = abs_tol + 1;
-	deltax = (mu/lambda)*lpf_quad(y,pts,wc);
+	deltax = (mu/lambda)*lpf_quad_lsqr(y,pts,wc,weights);
 	while error > abs_tol && iterations < opts.max_iters
 		deltax_old = deltax;
 		deltax = (mu/lambda)*y + (1-mu)*deltax + Kdag*(Kd*((mu/lambda)*deltax));
 		%Apply lpf
-		deltax = lpf_quad(deltax,pts,wc);
+		deltax = lpf_quad_lsqr(deltax,pts,wc,weights);
 		error = sqrt(weights' * abs(deltax - deltax_old).^2);
 		iterations = iterations + 1;
 	end;

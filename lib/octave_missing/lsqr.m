@@ -58,7 +58,13 @@ function [x,flag,relres,iters,residual] = lsqr(A,b, varargin)
 	x = v; 
 	beta = norm(b);
 	if (abs(beta-eps) < 2*eps) 
-		error('Right-hand side must be nonzero')
+		warning('Right-hand side was zero to machine precision');
+		flag = 0;
+		relres = 0;
+		iters = 0;
+		x = zeros(n,1);
+		residual = x;
+		return;
 	end;
 	u = b/beta;
 	if fn_handle

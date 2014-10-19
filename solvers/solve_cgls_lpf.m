@@ -28,8 +28,8 @@ function [chi, error, iterations] = solve_cgls_lpf(Kd, Kdag, S,...
         x0 = zeros(c,1);
     end;
 	
-	y = lpf_quad(Kdag*S+epsilon*x0, pts, wc);
-	[chi, flag, error, iterations] = cgs(@(x) lpf_quad(Kdag*(Kd*x) + epsilon*x, pts, wc), y, opts.tol, opts.max_iters);
+	y = lpf_quad_lsqr(Kdag*S+epsilon*x0, pts, wc,weights);
+	[chi, flag, error, iterations] = cgs(@(x) lpf_quad_lsqr(Kdag*(Kd*x) + epsilon*x, pts, wc, weights), y, opts.tol, opts.max_iters);
 	
 	if flag > 0
 		warning('Conjugate gradient method did not converge');

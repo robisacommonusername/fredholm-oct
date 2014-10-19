@@ -50,7 +50,7 @@ function [chi, error, iterations] = solve_iteratively_w2(Kd, Kdag, S,...
 	chi = x0;
 	while error > abs_tol && iterations < opts.max_iters
 		chi_old = chi;
-		chi = y + (1-mu)*chi - Kdag*(Kd*((mu/epsilon)*chi)) - mu*gamma/epsilon*chi + mu*gamma/epsilon*lpf_quad(chi, pts, wc);
+		chi = y + (1-mu)*chi - Kdag*(Kd*((mu/epsilon)*chi)) - mu*gamma/epsilon*chi + mu*gamma/epsilon*lpf_quad_lsqr(chi, pts, wc, weights);
 		error = sqrt(weights' * abs(chi - chi_old).^2);
 		iterations = iterations + 1;
 	end;
