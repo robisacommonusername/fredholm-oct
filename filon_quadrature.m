@@ -2,7 +2,7 @@
 %exp(i*k*z)f(z) for a range of different (large) k values
 %The weights will be different for each different k, so it is a matrix.
 %we will integrate over the interval [0,1]
-%See Philips and Rabinowitz, 1984
+%See Davis and Rabinowitz, "Methods of Numerical Integration", pp. 151-5, 1984
 function [pts, weights] = filon_quadrature(npoints, k)
 	[r,c] = size(k);
 	if r < c
