@@ -24,6 +24,11 @@ function [status, msg] = test_simpson()
 	[status, msg] = assert_eq(sum(weights.*exp(pts)), 1.71828);
 end
 
+function [status, msg] = test_filon()
+	[pts, weights] = generate_quadrature('filon',31);
+	[status, msg] = assert_eq(sum(weights.*exp(pts)), 1.71828);
+end
+
 function [status, msg] = test_trivial()
 	[pts, weights] = generate_quadrature('trivial',51);
 	[status, msg] = assert_eq(sum(weights.*exp(pts)), 1.71828);
@@ -44,7 +49,25 @@ function [status, msg] = test_simpson_monotonic()
 	[status, msg] = assert_eq(pts, sort(pts));
 end
 
+function [status, msg] = test_filon_monotonic()
+	[pts,weights] = generate_quadrature('filon',17);
+	[status, msg] = assert_eq(pts, sort(pts));
+end
+
 function [status, msg] = test_trivial_monotonic()
 	[pts,weights] = generate_quadrature('trivial',30);
 	[status, msg] = assert_eq(pts, sort(pts));
+end
+
+function [status, msg] = test_filon_dimension()
+	%Test that both pts and weights are column vectors
+	[pts,weights] = generate_quadrature('filon',17);
+	[rp,cp] = size(pts);
+	[rw,cw] = size(weights);
+	if (cp==1) && (cw == 1) && (rp==rw)
+		pass = 1;
+	else
+		pass = 0;
+	end;
+	[status, msg] = assert_eq(pass,1);
 end

@@ -87,6 +87,20 @@ function [pts, weights] = generate_quadrature(method, n)
 		weights = step * ones(n,1);
 		pts = (step/2:step:1-step/2)';
 		
+		case 'filon'
+		%Generates the filon weights/abscissas assuming the oscillating
+		%term is actually a constant (i.e. k=0). Should be compatible
+		%(more or less) with simpson. One difference is that 'simpson'
+		%doesn't use end points (i.e. open quadrature), but 'filon' will 
+		%return the classic simpson formulae, including the end points
+		%(closed quadrature)
+		%Do NOT use these wights/pts for
+		%discretising the kernel, use them for integrating the slowly
+		%varying part (i.e. chi). For discretising the kernel with filon
+		%method, use filon_quadrature, and specify the ki
+		[pts, weights_transpose] = filon_quadrature(n, 0);
+		weights = weights_transpose';
+		
 		otherwise
 		warning('unknown quadrature method. Falling back to trivial method');
 		[pts, weights] = generate_quadrature('trivial', n);
