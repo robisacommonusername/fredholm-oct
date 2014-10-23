@@ -13,9 +13,12 @@ function [chi, error, iterations] = solve_lsqr_lpf(Kd, S, epsilon, filter, varar
 		[r,c] = size(Kd);
         x0 = zeros(c,1);
     end;
+    
+    nk = length(S);
+    nz = length(x0);
 	
 	y_damped = [S;sqrt(epsilon)*x0];
-	f = @(x,t) filtered_damp_lsqr(Kd, sqrt(epsilon), filter, x, t);
+	f = @(x,t) filtered_damp_lsqr(Kd, sqrt(epsilon), filter, x, nk, nz, t);
 	[chi, flag, error, iterations] = lsqr(f, y_damped, opts.tol, opts.max_iters);
 	
 	if flag > 0
@@ -24,7 +27,7 @@ function [chi, error, iterations] = solve_lsqr_lpf(Kd, S, epsilon, filter, varar
 
 end
 
-function Ax = filtered_damp_lsqr(A, epsilon, P, x, t)
+function Ax = filtered_damp_lsqr(A, epsilon, P, x, nk, nz, t)
 	fn_handle = 0;
 	if is_function_handle(P)
 		f = P;
@@ -32,8 +35,7 @@ function Ax = filtered_damp_lsqr(A, epsilon, P, x, t)
 		f = @(x) P*x;
 	end;
 	if (strcmp(t,'transp'))
-		n = length(x)/2;
-		Ax = A'*f(x(1:n)) + epsilon*x((n+1):(2*n));
+		Ax = f(A'*x(1:nk)) + epsilon*x((nk+1):(nk+nz));
 	else
 		Ax = [A*f(x); epsilon*x];
 	end
