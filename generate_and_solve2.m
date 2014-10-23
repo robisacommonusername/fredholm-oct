@@ -20,6 +20,7 @@ function [chi_exact, chi_exp, y, z] = generate_and_solve2(f,A,ki,zf,width,n_line
 	
 	kmin = min(ki);
 	kmax = max(ki);
+	nk = length(ki);
 	
 	%Always use odd length sequence in y
 	if (mod(n_lines, 2) == 0)
@@ -44,9 +45,9 @@ function [chi_exact, chi_exp, y, z] = generate_and_solve2(f,A,ki,zf,width,n_line
 	figure;
 	colormap('gray');
 	imagesc(yy,zz,chi_exact);
-	title('Exact scatterer distribution');
-	xlabel('y');
-	ylabel('z');
+	title('Exact Scatterer Distribution');
+	xlabel('y/lambda');
+	ylabel('z/lambda');
 	if do_save
 		print(sprintf('%s_true.png',fn));
 		print(sprintf('%s_true.eps',fn));
@@ -55,26 +56,25 @@ function [chi_exact, chi_exp, y, z] = generate_and_solve2(f,A,ki,zf,width,n_line
 	%Now "OCT" it
 	fast_opts = fastcall_opts('n',opts.n,'quad_method',opts.quad_method);
 	lines_fft = fft(chi_exact,n_lines,2);
+	oct_img_fft = zeros(nk,n_lines);
 	for line = 1:n_lines
 		f1d = f(0,Qy(line));
 		[Kd, Kdag] = f1d(A,ki,zf,fast_opts);
-		lines_fft(:,line) = Kd*lines_fft(:,line);
+		oct_img_fft(:,line) = Kd*lines_fft(:,line);
 	end;
-	k_quad = unwarp_data('linear',z,kmin,kmax);
-	A_quad = interp1(ki,A,k_quad,'linear','extrap');
 	
-	oct_img = ifft(lines_fft,n_lines,2);
+	oct_img = ifft(oct_img_fft,n_lines,2);
 	%Invert - need to have x,y on major dimensions, k on minor dimension
-	S = reshape(transpose(oct_img), 1, n_lines, n_z);
-	[chi3d, rx, ry, rz] = solve_3d(f, S, 0, y, k_quad, A_quad, zf, 1, opts);
+	S = reshape(transpose(oct_img), 1, n_lines, nk);
+	[chi3d, rx, ry, rz] = solve_3d(f, S, 0, y, ki, A, zf, 1, opts);
 	%Reshape chi_3d
 	chi_exp = transpose(reshape(chi3d,n_lines, n_z));
 	figure;
 	colormap('gray');
 	imagesc(yy,zz,abs(chi_exp(:,2:n_lines)));
-	title('Recovered scatterer distribution');
-	xlabel('y');
-	ylabel('z');
+	title('Recovered Scatterer Distribution');
+	xlabel('y/lambda');
+	ylabel('z/lambda');
 	if do_save
 		print(sprintf('%s_recovered.png',fn));
 		print(sprintf('%s_recovered.eps',fn));
