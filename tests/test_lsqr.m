@@ -58,10 +58,12 @@ function [status, msg] = test_damped()
 	x = rand(5,1);
 	b = inv(A)*(A'*A*x + epsilon*x);
 	b_damped = [b; zeros(5,1)];
+	nk = length(b);
+	nz = 5;
 	%This is basically a ternary statement, implemented here because
 	%matlab is a terrible language
 	%iif  = @(varargin) varargin{2*find([varargin{1:2:end}], 1, 'first')}();
-	f = @(x,t) damp_lsqr(A, sqrt(epsilon), x, t);
+	f = @(x,t) damp_lsqr(A, sqrt(epsilon), x, nk, nz, t);
 	x_lsqr = lsqr(f,b_damped,0.001);
 	[status, msg] = assert_eq(x,x_lsqr,0.001);
 end

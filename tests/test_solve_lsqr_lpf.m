@@ -33,7 +33,7 @@ function [status, msg] = test_lowpass_sine_solution()
 	opts = solve_iteratively_opts('x0',x,'tol',0.0001);
 	wc = 4*pi;
 	P = @(x) lpf_quad_lsqr(x, t, wc, weights);
-	xp = solve_lsqr_lpf(K, P, y, epsilon, opts);
+	xp = solve_lsqr_lpf(K, y, epsilon, P, opts);
 	[status, msg] = assert_eq(xp,x,0.01);
 	
 end
@@ -58,8 +58,7 @@ function [status, msg] = test_lowpass_cosine_solution()
 	%y = Kdag\rhs;
 	wc = 4*pi;
 	P = @(x) lpf_quad_lsqr(x, t, wc, weights);
-	xp = solve_lsqr_lpf(K, P, y, epsilon, opts);
-	keyboard();
+	xp = solve_lsqr_lpf(K, y, epsilon, P, opts);
 	[status, msg] = assert_eq(xp,x,0.01);
 	
 end
@@ -90,7 +89,7 @@ function [status, msg] = test_projected_solution()
 	y = Kdag\rhs;
 	wc = 10*pi;
 	P = @(x) lpf_quad_lsqr(x, tbar, wc, weights);
-	x_l = solve_lsqr_lpf(K, P, y, epsilon);
+	x_l = solve_lsqr_lpf(K, y, epsilon, P);
 
 	%x_l should go approximately like 0.5*sinc(0.5t).
 	%Appears to, except near the ends we have a bit too much attentuation
