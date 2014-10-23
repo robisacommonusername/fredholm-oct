@@ -24,6 +24,7 @@ function psi_l = lpf_quad_lsqr(psi, pts, wc, varargin)
 		omega = pi*((1-N):2:(N-1));
 		[ww,zz] = meshgrid(omega, pts);
 		A = exp(i*ww.*zz);
-		psi_l = A*lsqr(sqrtW*A, sqrtW*psi);
+		[c,flag] = lsqr(sqrtW*A, sqrtW*psi);
+		psi_l = A*c;
 	end;
 end
