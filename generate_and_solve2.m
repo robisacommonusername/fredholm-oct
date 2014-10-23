@@ -5,15 +5,15 @@
 %And create an image
 
 %f is a fastcall generator generator
-function [chi_exact, chi_exp, y, z] = generate_and_solve2(f,A,ki,zf,width,n_lines,n_points,scat_size,varargin)
-	if nargin > 8
+function [chi_exact, chi_exp, y, z] = generate_and_solve2(f,A,ki,zf,width,n_lines,chi_fun,varargin)
+	if nargin > 7
 		opts = varargin{1};
 	else
 		opts = solve_1d_opts('n',300,'mean_chi',0);
 	end;
 	
 	do_save = 0;
-	if nargin > 9
+	if nargin > 8
 		fn = varargin{2};
 		do_save = 1;
 	end;
@@ -41,7 +41,7 @@ function [chi_exact, chi_exp, y, z] = generate_and_solve2(f,A,ki,zf,width,n_line
 	z = linspace(0,zf,n_z);
 	%z = unwarp_data('linear', pts, zf);
 	[yy,zz] = meshgrid(y,z);
-	chi_exact = make_dots(zz,yy,n_points,scat_size);
+	chi_exact = chi_fun(zz,yy);
 	figure;
 	colormap('gray');
 	imagesc(yy,zz,chi_exact);
@@ -81,18 +81,4 @@ function [chi_exact, chi_exp, y, z] = generate_and_solve2(f,A,ki,zf,width,n_line
 	end;
 	keyboard();
 	
-end
-
-function img = make_dots(zz,yy,npoints,scat_size)
-	zmax = max(max(zz));
-	zmin = min(min(zz));
-	ymax = max(max(yy));
-	ymin = min(min(yy));
-	[r,c] = size(zz);
-	img = zeros(r,c);
-	for ii = 1:npoints
-		centre = [zmax-zmin;ymax-ymin].*rand(2,1)+[zmin;ymin];
-		%keyboard();
-		img(vec((zz-centre(1)).^2 + (yy-centre(2)).^2 < scat_size^2)) = 1;
-	end;
 end
