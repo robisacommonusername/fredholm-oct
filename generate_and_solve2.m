@@ -5,11 +5,17 @@
 %And create an image
 
 %f is a fastcall generator generator
-function [chi_exact, chi_exp, y, z] = generate_and_solve2(f,A,ki,zf,width,n_lines,n_points,varargin)
-	if nargin > 7
+function [chi_exact, chi_exp, y, z] = generate_and_solve2(f,A,ki,zf,width,n_lines,n_points,scat_size,varargin)
+	if nargin > 8
 		opts = varargin{1};
 	else
-		opts = solve_1d_opts('n',300);
+		opts = solve_1d_opts('n',300,'mean_chi',0);
+	end;
+	
+	do_save = 0;
+	if nargin > 9
+		fn = varargin{2};
+		do_save = 1;
 	end;
 	
 	kmin = min(ki);
@@ -28,24 +34,30 @@ function [chi_exact, chi_exp, y, z] = generate_and_solve2(f,A,ki,zf,width,n_line
 	%spatial frequencies in order returned by matlab/octave fft
 	Qy = [0:dQy:omegaN, -1*omegaN:dQy:(-1*dQy)];
 	
-	%Generate actual image
-	chi_exact = zeros(opts.n,n_lines);
-	rand_indices = sort(ceil(opts.n*n_lines*rand(1,n_points)));
-	rand_susceptibilities = (0.96-0.69)*rand(1,n_points)+0.69;
-	chi_exact(rand_indices) = rand_susceptibilities;
+	%Generate actual image - make some small circles
+	[pts, weights] = generate_quadrature(opts.quad_method, opts.n);
+	n_z = length(pts);
+	z = linspace(0,zf,n_z);
+	%z = unwarp_data('linear', pts, zf);
+	[yy,zz] = meshgrid(y,z);
+	chi_exact = make_dots(zz,yy,n_points,scat_size);
 	figure;
 	colormap('gray');
-	imagesc(chi_exact);
+	imagesc(yy,zz,chi_exact);
 	title('Exact scatterer distribution');
 	xlabel('y');
 	ylabel('z');
-	
+	if do_save
+		print(sprintf('%s_true.png',fn));
+		print(sprintf('%s_true.eps',fn));
+	end;
+	keyboard();
 	%Now "OCT" it
 	fast_opts = fastcall_opts('n',opts.n,'quad_method',opts.quad_method);
 	lines_fft = fft(chi_exact,n_lines,2);
 	for line = 1:n_lines
 		f1d = f(0,Qy(line));
-		[Kd, Kdag, z, weights] = f1d(A,ki,zf,fast_opts);
+		[Kd, Kdag] = f1d(A,ki,zf,fast_opts);
 		lines_fft(:,line) = Kd*lines_fft(:,line);
 	end;
 	k_quad = unwarp_data('linear',z,kmin,kmax);
@@ -53,15 +65,34 @@ function [chi_exact, chi_exp, y, z] = generate_and_solve2(f,A,ki,zf,width,n_line
 	
 	oct_img = ifft(lines_fft,n_lines,2);
 	%Invert - need to have x,y on major dimensions, k on minor dimension
-	S = reshape(transpose(oct_img), 1, n_lines, opts.n);
+	S = reshape(transpose(oct_img), 1, n_lines, n_z);
 	[chi3d, rx, ry, rz] = solve_3d(f, S, 0, y, k_quad, A_quad, zf, 1, opts);
 	%Reshape chi_3d
-	chi_exp = transpose(reshape(chi3d,n_lines, opts.n));
+	chi_exp = transpose(reshape(chi3d,n_lines, n_z));
 	figure;
 	colormap('gray');
-	imagesc(abs(chi_exp(:,2:n_lines)));
+	imagesc(yy,zz,abs(chi_exp(:,2:n_lines)));
 	title('Recovered scatterer distribution');
 	xlabel('y');
 	ylabel('z');
+	if do_save
+		print(sprintf('%s_recovered.png',fn));
+		print(sprintf('%s_recovered.eps',fn));
+	end;
+	keyboard();
 	
+end
+
+function img = make_dots(zz,yy,npoints,scat_size)
+	zmax = max(max(zz));
+	zmin = min(min(zz));
+	ymax = max(max(yy));
+	ymin = min(min(yy));
+	[r,c] = size(zz);
+	img = zeros(r,c);
+	for ii = 1:npoints
+		centre = [zmax-zmin;ymax-ymin].*rand(2,1)+[zmin;ymin];
+		%keyboard();
+		img(vec((zz-centre(1)).^2 + (yy-centre(2)).^2 < scat_size^2)) = 1;
+	end;
 end
