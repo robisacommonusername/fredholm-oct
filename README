@@ -1,0 +1,107 @@
+========================================================================
+								SETUP
+========================================================================
+A startup.m file and .octaverc file are provided to set up the code path
+for the software automatically. If these fail to run for whatever reason
+the code path can be set up manually. Enter the following commands:
+
+>>> addpath('./kernels');
+>>> addpath('./solvers');
+>>> addpath('./lib/regu');
+
+If you wish to run the test suite, you will also need to execute
+>>> addpath('./museum');
+>>> addpath('./tests');
+>>> addpath('./lib/omtest');
+
+If you wish to run the test suite on matlab, you also need to execute
+>>> addpath('./lib/omtest/matlab_missing');
+This library contains implementations of some functions present in 
+octave but not matlab
+
+Finally, if running the code on octave (rather than matlab), you will
+need
+>>> addpath('./lib/octave_missing');
+The octave_missing library contains a matlab compatible implementation
+of the lsqr algorithm (which isn't currently available in octave)
+
+========================================================================
+							SOLVING PROBLEMS
+========================================================================
+The two functions intended for use by end users are "solve_1d" (for
+solving generalised laminate problems) and "solve_3d" (for solving 2D or
+3D problems). Refer to the help for those functions.
+
+User will in general need to specify
+1. A Fredholm kernel (which depends on the type of illuminating beam).
+To find the names of the kernel functions, inspect the m files in the
+'./kernels' folder
+2. The interferometric measurements S
+3. The sampling points of S (for 1D problem, this is just the 
+wavenumbers, for 3D problem it is wavenumbers plus beam axis positions)
+4. The spectral envelope of the illuminating source (A(k)), sampled at 
+the same locations in the k domain as S
+5. The sample thickness
+6. Remaining options are passed to the solver as a struct. To pass a 
+value for the parameter 'key' the value 'val' create the struct using
+the solve_1d_opts or solve_3d_opts helper functions, i.e.
+>>> opts_struct = solve_1d_opts('key',val);
+Muliple key/value pairs can be passed in any order:
+>>> opts_struct = solve_1d_opts('key2',val2,'key1',val1,'key3',val3);
+keys that are not specified by the user are set to "sensible" default
+values.
+For a list of recognised key/value pairs, and default values, refer to 
+the help for solve_1d_opts and solve_3d_opts.
+
+Examples:
+Solve a 1D problem (generalised laminate) using an LSQR solver, with
+w^2(B) constrained regularisation, B the diffraction limit, with
+- Gaussian beam
+- Filon discretised kernel, with 201 discretisation points
+- S and A sampled at the points ki
+- sample thickness zf
+- Solve to relative tolerance of rtol
+- Limit LSQR solver to 30 iterations
+- Beam focussed in plane z=z0
+- Objective lens numerical apperture NA
+- Background susceptibility function f(z) (pass as a function handle)
+>>> kernel_generator = fastcall_gauss_kernel_lsq_filon(0,pi/NA,z0);
+>>> [chi, error, iterations] = solve_1d(...
+		kernel_generator, S, A, ki, zf, ...
+		solve_1d_opts('tol',rtol,'solver','lsqr_lpf',...
+			'quad_method','filon','n',201,'max_iters',30,'mean_chi',f));
+
+========================================================================
+							RUNNING TESTS
+========================================================================
+The tests are located in the "tests" subfolder.
+
+To run the full test suite, type at the matlab/octave prompt
+>>> cross_test();
+
+To run a specific test, look up the name of the test in the "tests"
+folder. The test name is the same as the name of the m file, minus the 
+".m" extension (e.g. 'test_lpf_quad_lsqr')
+To run the specific test, type at the prompt
+>>> cross_test('test_name');
+
+A summary of test results will be displayed. The testing framework
+should run on both matlab and octave unmodified. The code for the test
+framework itself is located in the 'lib/omtest' subfolder.
+
+The full test suite should pass on both matlab and octave. New tests can
+be created by creating a new m file in the tests subfolder. A test file 
+must begin with the boilerplate
+function ret = NAME_OF_TEST(varargin)
+	test_names = find_tests(mfilename());
+	tests={};
+	for ii = 1:length(test_names) 
+		tests{ii} = str2func(test_names{ii}); 
+	end;
+	ret = run_tests(tests, test_names);
+end
+
+After the boilerplate, test functions can be added. The test functions
+should return a status and a message. Status is an integer code, set to
+0 for PASS and greater than 0 to indicate a failure. message is a string
+message. Refer to exisiting test files for more information
