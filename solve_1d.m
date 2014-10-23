@@ -74,13 +74,18 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 	
 	%Construct low order discretisation and regularise
 	[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
-	sigma_low = resample_vector(S, ki, pts_low);
+	%sigma_low = resample_vector(S, ki, pts_low);
 	ws = 2*pi*fast_opts.n_low;
-	epsilon = lcurve_calculate_eps(Kd_low, Kdag_low, sigma_low, wc/ws);
+	epsilon = lcurve_calculate_eps(Kd_low, Kdag_low, sigma, wc/ws);
 	
 	%solve equations
 	normK = operator_norm(Kd,Kdag,weights);
-	x0 = opts.mean_chi*ones(length(pts),1);
+	%Choose initial estimate
+	if isnumeric(opts.mean_chi)
+		x0 = opts.mean_chi*ones(length(pts),1);
+	else
+		x0 = arrayfun(opts.mean_chi, unwarp_data('linear',pts,zf));
+	end;
 	%TODO:
 	%ammend all solvers to handle overdetermined problems. Will need to
 	%pass additional ki parameter. This way we can make downsampling optional
