@@ -142,24 +142,25 @@ function [chi, rx, ry, rz, error] = solve_3d(f, S, S_xi, S_yi, ki, A, zf, vararg
 	
 	%We reshape the array S now to get the z axis as the major dimension
 	%This is to optimise memory access
-	[ix_max, iy_max, npoints] = size(Stilde);
+	[ix_max, iy_max, nk] = size(Stilde);
 	%TODO: rearrange memory to get z on major dimension to improve cache access
 	%Stilde = shiftdim(Stilde,1); 
 	z_pts = []; %Initialization in scope
+	chi = zeros(ix_max,iy_max,opts_3d.n);
 	%these loops can be parallelised
 	for ix = 1:ix_max
 		for iy = 1:iy_max
 			f1d = f(Qx(ix), Qy(iy));
-			S1d = reshape(Stilde(ix,iy,:), npoints, 1);
+			S1d = reshape(Stilde(ix,iy,:), nk, 1);
 			[chiz, z_pts, error] = solve_1d(f1d, S1d, A,...
 				ki, zf, opts_1d );
-			Stilde(ix,iy,:) = chiz; %reuse memory
+			chi(ix,iy,:) = chiz;
 		end;
 	end;
 	
 	%perform ifft on each slice. Shift back to optimise memory access pattern
 	%Stilde = shiftdim(Stilde,-1);
-	chi = ifft2(Stilde);
+	chi = ifft2(chi);
 	rx = S_xi;
 	ry = S_yi;
 	rz = z_pts;
