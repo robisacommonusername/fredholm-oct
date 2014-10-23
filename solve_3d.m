@@ -66,10 +66,10 @@ function [chi, rx, ry, rz, error] = solve_3d(f, S, S_xi, S_yi, ki, A, zf, vararg
 	end;
 	
 	%Determine minimum feature size, or set to diffraction limit
-	if (opts.min_feature < pi/kmax)
+	if (opts_3d.min_feature < pi/kmax)
 		wc = 2*zf*kmax; %diffraction limit for non dimensionalised
 	else
-		wc = 4*pi/(opts.min_feature/zf);
+		wc = 4*pi/(opts_3d.min_feature/zf);
 	end;
 	
 	%if no discretisation level set, set based on Diffraction limit - let
