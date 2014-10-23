@@ -1,12 +1,11 @@
 %Solve a 1d fredholm problem, using fastcall object
 % 
 %Paramaters
-%f: fastcall function
+%f: fastcall function (kernel generator)
 %S: recorded interferometric data as a function of k (vector)
 %A: source spectrum as function of k (vector).
 %ki: sampled wavenumbers for S and A
 %zf: sample thickness
-%mean_chi: average susceptibility, required for regularisation 
 %varargin
 %create a solve_1d_opts structure to pass other params to the solver.
 % refer to solve_1d_opts.m for allowed fields
@@ -37,6 +36,7 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 		wc = 4*pi/(opts.min_feature/zf);
 	end;
 	
+	
 	%if no discretisation level set, set based on Diffraction limit - let
 	%'Nyquist' rate be 1.5 times diffraction limit. 1.5 is somewhat arbitrary magic number,
 	%just chosen different from 1 to gives us some design margin
@@ -65,6 +65,19 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 		sigma = S;
 	end;
 	
+	%Create a filter function if none has been specified
+	if isfield(opts, 'filter')
+		filter = opts.filter;
+	else
+		filter = @(x) lpf_quad_lsqr(x, pts, wc, weights);
+	end;
+	
+	%Construct low order discretisation and regularise
+	[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
+	sigma_low = resample_vector(S, ki, pts_low);
+	ws = 2*pi*fast_opts.n_low;
+	epsilon = lcurve_calculate_eps(Kd_low, Kdag_low, sigma_low, wc/ws);
+	
 	%solve equations
 	normK = operator_norm(Kd,Kdag,weights);
 	x0 = opts.mean_chi*ones(length(pts),1);
@@ -72,13 +85,7 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 	%ammend all solvers to handle overdetermined problems. Will need to
 	%pass additional ki parameter. This way we can make downsampling optional
 	switch (opts.solver)
-		case 'richardson_lpf'
-			%Construct low order discretisation and regularise
-			[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
-			sigma_low = resample_vector(S, ki, pts_low);
-			ws = 2*pi*fast_opts.n_low;
-			epsilon = lcurve_calculate_eps_lpf(Kd_low, Kdag_low, sigma_low, wc/ws);
-			
+		case 'richardson_lpf'	
 			%downsample
 			sigma = resample_vector(S, ki, pts);
 			[chi, error, iters] = solve_iteratively_lpf(Kd, Kdag, sigma,...
@@ -86,27 +93,10 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 				solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
 					'max_iters',opts.max_iters));
 		case 'richardson_zero'
-			%Construct low order discretisation and regularise
-			[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
-			sigma_low = resample_vector(S, ki, pts_low);
-			ws = 2*pi*fast_opts.n_low;
-			epsilon = lcurve_calculate_eps(Kd_low, Kdag_low, sigma_low, wc/ws);
-
 			[chi, error, iters] = solve_iteratively(Kd, Kdag, sigma, weights,epsilon,...
 				solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
 					'max_iters',opts.max_iters));
-		case 'richardson_w2'
-			%Construct low order discretisation and regularise
-			[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
-			sigma_low = resample_vector(S, ki, pts_low);
-			ws = 2*pi*fast_opts.n_low;
-			epsilon = lcurve_calculate_eps_lpf(Kd_low, Kdag_low, sigma_low, wc/ws);
-			gamma = 0.5*normK^2;
-
-			[chi, error, iters] = solve_iteratively_w2(Kd, Kdag, sigma,...
-				pts, weights, epsilon, wc, gamma,
-				solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
-					'max_iters',opts.max_iters));
+		
 		case 'bicg_galerkin'
 			%This function will handle the computation of its own regularisation
 			%no downsampling required, this function can handle overdetermined
@@ -120,6 +110,25 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 			[chi, error, iters] = solve_bicg_galerkin(Kd, sigma, ki, pts, weights, wc,...
 			solve_iteratively_opts('x0',x0,'norm_k',normK,'tol',opts.tol,...
 				'max_iters',opts.max_iters,'basis',opts.basis));
+		case 'lsqr'
+			[chi, error, iters] = solve_lsqr(Kd, S, epsilon, ...
+			solve_iteratively_opts('x0',x0,'tol',opts.tol,...
+				'max_iters',opts.max_iters));
+		
+		case 'lsqr_lpf'
+			[chi, error, iters] = solve_lsqr_lpf(Kd, S, epsilon, filter,...
+			solve_iteratively_opts('x0',x0,'tol',opts.tol,...
+				'max_iters',opts.max_iters));
+		
+		case 'cgls'
+			[chi, error, iters] = solve_cgls(Kd, Kdag, S, epsilon, ...
+			solve_iteratively_opts('x0',x0,'tol',opts.tol,...
+				'max_iters',opts.max_iters));
+		
+		case 'cgls_lpf'
+			[chi, error, iters] = solve_cgls_lpf(Kd, Kdag, S, epsilon, filter,...
+			solve_iteratively_opts('x0',x0,'tol',opts.tol,...
+				'max_iters',opts.max_iters));
 		
 		otherwise
 			warning('Unrecognised solver specified. Falling back to QR');

@@ -15,21 +15,21 @@
 %onto w^2(B). We hope that this solution is 'close' to the true solution,
 % i.e. ||x - Px||<<||x||
 function [chi, error, iterations] = solve_cgls_lpf(Kd, Kdag, S,...
-	pts, weights, epsilon, wc, varargin)
+	epsilon, filter, varargin)
 	%set up options
-	if nargin > 7
+	if nargin > 5
 		opts = varargin{1};
 	else
 		opts = solve_iteratively_opts(); %defaults
 	end;
-	x0 = opts.x0;
+	x0 = filter(opts.x0);
     if x0 == 0
 		[r,c] = size(Kd);
         x0 = zeros(c,1);
     end;
 	
-	y = lpf_quad_lsqr(Kdag*S+epsilon*x0, pts, wc,weights);
-	[chi, flag, error, iterations] = cgs(@(x) lpf_quad_lsqr(Kdag*(Kd*x) + epsilon*x, pts, wc, weights), y, opts.tol, opts.max_iters);
+	y = filter(Kdag*S+epsilon*x0);
+	[chi, flag, error, iterations] = cgs(@(x) filter(Kdag*(Kd*x) + epsilon*x), y, opts.tol, opts.max_iters);
 	
 	if flag > 0
 		warning('Conjugate gradient method did not converge');

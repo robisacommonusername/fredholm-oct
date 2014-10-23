@@ -1,4 +1,4 @@
-%utility function for parsing input options to pass to solve_1d
+%utility function for parsing input options to pass to solve_3d
 %usage:
 %t = solve_1d_opts('key1',val1,'key2',val2,...)
 %
@@ -34,10 +34,9 @@
 %		the poblem), and a least squares solution returned. The only reason
 %		one might wish to downsample is to improve performance, as it will
 %		downsample S to the minimum number of entries required to solve the problem
-%	filter: anonymous function to perform low pass filtering. Not set by
-%	default, this parameter is optional.
+%	do_filter: Contrain solution to w^2(B)? 1=yes, 0=no, default=1
 
-function opts = solve_1d_opts(varargin)
+function opts = solve_3d_opts(varargin)
 	%set up default values
 	opts = struct(...
 		'solver', 'richardson_lpf',...
@@ -45,11 +44,12 @@ function opts = solve_1d_opts(varargin)
 		'mean_chi',0.8125,...
 		'quad_method', 'gauss10',...
 		'max_iters',0,...
-		'tol', 0.00000001,...
+		'tol', 0.000001,...
 		'basis','spatial',...
 		'correction',1,...
 		'min_feature',0,...
-		'downsample',1);
+		'downsample',0,
+		'do_filter',1);
 	
 	key = '';
 	ii = 1;

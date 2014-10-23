@@ -3,9 +3,9 @@
 % Computes regularisation parameter epsilon, and then solves
 % KdagS = epsilon*(x-x0) + Kdag*K*x
 %
-function [chi, error, iterations] = solve_cgls(Kd, Kdag, S, weights, epsilon, varargin)
+function [chi, error, iterations] = solve_cgls(Kd, Kdag, S, epsilon, varargin)
 	%set up options
-	if nargin > 5
+	if nargin > 4
 		opts = varargin{1};
 	else
 		opts = solve_iteratively_opts(); %defaults

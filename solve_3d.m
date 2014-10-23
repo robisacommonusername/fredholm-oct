@@ -48,10 +48,63 @@ function [chi, rx, ry, rz, error] = solve_3d(f, S, S_xi, S_yi, ki, A, zf, vararg
 		do_fft = 1;
 	end;
 	if nargin > 8
-		opts_1d = varargin{2};
+		opts_3d = varargin{2};
 	else
-		opts_1d = solve_1d_opts(); %use defaults
+		opts_3d = solve_3d_opts(); %use defaults
 	end;
+	
+	
+	%determine max and min wavenumber - swap if necessary
+	kmin = ki(1);
+	kmax = ki(end);
+	if kmax < kmin
+		ki = flipdim(ki);
+		S = flipdim(S);
+		A = flipdim(A);
+		kmin = ki(1);
+		kmax = ki(end);
+	end;
+	
+	%Determine minimum feature size, or set to diffraction limit
+	if (opts.min_feature < pi/kmax)
+		wc = 2*zf*kmax; %diffraction limit for non dimensionalised
+	else
+		wc = 4*pi/(opts.min_feature/zf);
+	end;
+	
+	%if no discretisation level set, set based on Diffraction limit - let
+	%'Nyquist' rate be 1.5 times diffraction limit. 1.5 is somewhat arbitrary magic number,
+	%just chosen different from 1 to gives us some design margin
+	%Note that quad points aren't equally spaced, hence 'Nyquist' rate = 1/2max(Ts)
+	if opts_3d.n == 0
+		Nyquist = 1.5*wc;
+		max_sample_period = 0.5/Nyquist;
+		opts.n = quad_points_needed(opts_3d.quad_method,max_sample_period);
+	end;
+	
+	%Precompute the quadrature points, weights, low pass filter as a matrix.
+	[pts, weights] = generate_quadrature(opts_3d.quad_method, opts_3d.n);
+	%TODO: pass computed points and weights to the 1d solver so they don't
+	%have to be recomputed
+	if (opts_3d.do_filter)
+		P = make_lpf(wc,pts,weights);
+		filter = @(x) P*x;
+	else
+		filter = @(x) x; %identity, no filtering
+	end;
+	
+	%Create 1d options from the 3d options
+	opts_1d = solve_1d_opts(
+		'solver', opts_3d.solver,...
+		'n',opts_3d.n,...
+		'mean_chi',opts_3d.mean_chi,...
+		'quad_method', opts_3d.quad_method,...
+		'max_iters',opts_3d.max_iters,...
+		'tol', opts_3d.tol,...
+		'basis',opts_3d.basis,...
+		'min_feature',opts_3d.min_feature,...
+		'filter',filter);
+	
 	
 	%TODO: need to deal with non-uniform sampling in xy plane before fft
 	%perform fft on each slice of S
@@ -91,7 +144,7 @@ function [chi, rx, ry, rz, error] = solve_3d(f, S, S_xi, S_yi, ki, A, zf, vararg
 	%This is to optimise memory access
 	[ix_max, iy_max, npoints] = size(Stilde);
 	%TODO: rearrange memory to get z on major dimension to improve cache access
-	%Stilde = shiftdim(Stilde,1);
+	%Stilde = shiftdim(Stilde,1); 
 	z_pts = []; %Initialization in scope
 	%these loops can be parallelised
 	for ix = 1:ix_max

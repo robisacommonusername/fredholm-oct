@@ -1,7 +1,7 @@
 %Solve the damped least squares problem using Paige and Saunders LSQR
 %algorithm, but with a low pass filtering stage
 
-function [chi, error, iterations] = solve_lsqr_lpf(Kd, P, S, epsilon, varargin)
+function [chi, error, iterations] = solve_lsqr_lpf(Kd, S, epsilon, filter, varargin)
 	%set up options
 	if nargin > 4
 		opts = varargin{1};
@@ -15,7 +15,7 @@ function [chi, error, iterations] = solve_lsqr_lpf(Kd, P, S, epsilon, varargin)
     end;
 	
 	y_damped = [S;sqrt(epsilon)*x0];
-	f = @(x,t) filtered_damp_lsqr(Kd, sqrt(epsilon), P, x, t);
+	f = @(x,t) filtered_damp_lsqr(Kd, sqrt(epsilon), filter, x, t);
 	[chi, flag, error, iterations] = lsqr(f, y_damped, opts.tol, opts.max_iters);
 	
 	if flag > 0
