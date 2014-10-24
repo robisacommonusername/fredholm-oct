@@ -50,7 +50,7 @@ function [chi_exact, chi_exp, y, z] = generate_and_solve2(f,A,ki,zf,width,n_line
 	ylabel('z/lambda');
 	if do_save
 		print(sprintf('%s_true.png',fn));
-		print(sprintf('%s_true.eps',fn));
+		print(sprintf('%s_true.pdf',fn));
 	end;
 	keyboard();
 	%Now "OCT" it
@@ -77,7 +77,7 @@ function [chi_exact, chi_exp, y, z] = generate_and_solve2(f,A,ki,zf,width,n_line
 	ylabel('z/lambda');
 	if do_save
 		print(sprintf('%s_recovered.png',fn));
-		print(sprintf('%s_recovered.eps',fn));
+		print(sprintf('%s_recovered.pdf',fn));
 	end;
 	keyboard();
 	
