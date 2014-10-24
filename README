@@ -14,9 +14,10 @@ If you wish to run the test suite, you will also need to execute
 >>> addpath('./tests');
 >>> addpath('./lib/omtest');
 
-If you wish to run the test suite on matlab, you also need to execute
+If you are running matlab, you need to run
 >>> addpath('./lib/omtest/matlab_missing');
-This library contains implementations of some functions present in 
+>>> addpath('./lib/matlab_missing');
+These libraries contain implementations of some functions present in 
 octave but not matlab
 
 Finally, if running the code on octave (rather than matlab), you will
