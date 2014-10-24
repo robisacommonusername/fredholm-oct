@@ -29,20 +29,3 @@ function [status,msg] = pi_square()
 	a = H(1,0);
 	[status,msg] = assert_eq(a,pi^2);
 end
-
-%TODO: get this test working and running faster
-function [status, msg] = reproduce_gauss_kernel()
-	%we should be able to reproduce a gaussian kernel (approximately)
-	alpha = 1;
-	z0=0;
-	g0 = @(q,k) exp(-1*norm(q)^2*alpha^2/2/k^2);
-	H1 = gauss_kernel(0,alpha,z0);
-	H2 = general_kernel2(g0,[0,0],z0);
-	%Only use a small number of test points, the kernel evaluations are
-	%VERY slow
-	test_z = rand(1,5);
-	test_k = rand(1,5)+1;
-	evals1 = arrayfun(H1,test_k,test_z);
-	evals2 = arrayfun(H2,test_k,test_z);
-	[status,msg] = assert_eq(evals1,evals2);
-end
