@@ -1,3 +1,5 @@
+%THIS KERNEL IS DEPRECATED. USE FASTCALL_GAUSS_KERNEL_LSQ INSTEAD
+
 %This function is a prototype for implementation in C
 
 %This function supersedes
