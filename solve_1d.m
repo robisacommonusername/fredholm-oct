@@ -76,7 +76,7 @@ function [chi, z_pts, error] = solve_1d(f, S, A, ki, zf, varargin)
 	[Kd_low, Kdag_low, pts_low] = f(A,ki,zf,setfield(fast_opts, 'low', 1));
 	%sigma_low = resample_vector(S, ki, pts_low);
 	ws = 2*pi*fast_opts.n_low;
-	epsilon = lcurve_calculate_eps(Kd_low, Kdag_low, sigma, wc/ws);
+	epsilon = lcurve_calculate_eps_lpf(Kd_low, Kdag_low, sigma, wc/ws);
 	
 	%solve equations
 	normK = operator_norm(Kd,Kdag,weights);

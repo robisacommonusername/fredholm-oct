@@ -25,7 +25,7 @@ function [status, msg] = small_test_q0_gaussianbeam_10db()
 	zf = 900*lambda;
 	z0 = zf/2;
 	npoints = 800;
-	ki = linspace(kmin,kmax,npoints);
+	ki = transpose(linspace(kmin,kmax,npoints));
 	A = ones(npoints,1);
 	A = A/norm(A);
 	noise_ratio = 0.1; %10dB SNR
@@ -39,7 +39,7 @@ function [status, msg] = small_test_q0_gaussianbeam_10db()
 	bg = @(z) 0.81*(heaviside(z-1.1*lambda)-heaviside(z-3.9*lambda));
 	%bg = @(z) 0;
 	
-	f = fastcall_gauss_kernel(Q,alpha,z0);
+	f = fastcall_gauss_kernel_lsq(Q,alpha,z0);
 	[chi_exp,z_exp] = generate_and_solve(chi,f,A,ki,zf,noise_ratio,solver_opts,sprintf('Thin object, NA=%1.1f, SNR=%ddB',NA, SNR),'z/lambda');
 	
 	fprintf('\n------- small_test_q0_gaussianbeam_10db--------\nUser Input required:\n\n');
