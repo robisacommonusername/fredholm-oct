@@ -46,8 +46,8 @@ function [status, msg] = test_cylinder()
 	lambda = 1; %non-dimensionalise everything please. Do all calcs in terms of Lambda
 	lambda_min = lambda-0.125*lambda;
 	lambda_max = lambda+0.125*lambda;
-	k = linspace(2*pi/lambda_max,2*pi/lambda_min,1000); %wavenumbers in spectrum
-	A = ones(length(k),1); %Spectral envelope
+	ki = transpose(linspace(2*pi/lambda_max,2*pi/lambda_min,1000)); %wavenumbers in spectrum
+	A = ones(length(ki),1); %Spectral envelope
 	n = 1.3; %Refractive index
 	zf = 7*lambda; %thickness of simulation region. 5lambda cylinder, +1 wavelength padding on each end
 	r = 20*lambda; %cylinder radius
@@ -70,7 +70,7 @@ function [status, msg] = test_cylinder()
 	end;
 	%Do the transverse fourier transform analytically. Factor of N is to
 	%Correct for the 1/N that will occur when we do the ifft
-	chi_tilde = @(Q,z) (n^2-1)*N*besselj(1,r*Q)/(r*Q)*(heavisides(z-lambda)-heaviside(z - 6*lambda));
+	chi_tilde = @(Q,z) (n^2-1)*N*besselj(1,r*Q)/(r*Q)*(heaviside(z-lambda)-heaviside(z - 6*lambda));
 	
 	Qs = 1/N*dQ*[0:((N-1)/2), ((1-N)/2):-1];
 	S_tilde = zeros(n_quad,N,N); %z axis is major dimension will rotate dimensions later
